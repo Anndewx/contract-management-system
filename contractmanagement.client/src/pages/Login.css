@@ -1,0 +1,85 @@
+/* Login.css */
+
+.gradient-custom {
+  background: #6a11cb;
+  background: -webkit-linear-gradient(to right, rgba(106, 17, 203, 1), rgba(37, 117, 252, 1));
+  background: linear-gradient(to right, rgba(106, 17, 203, 1), rgba(37, 117, 252, 1));
+  
+  /* ล็อคความสูงและจัดการ Overflow */
+  min-height: 100vh;
+  width: 100vw;
+  overflow: hidden; /* ซ่อน Scrollbar */
+}
+
+/* ปรับแต่ง Input ให้เข้ากับธีมมืด */
+.form-control {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white !important;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem; /* Padding พอเหมาะ ไม่ใหญ่เทอะทะแบบ lg */
+}
+
+.form-control:focus {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    border-color: #fff;
+    box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.1);
+}
+
+.form-control::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.9rem;
+}
+
+/* Label เล็กๆ ด้านบน Input */
+.form-label.small {
+    font-size: 0.85rem;
+    margin-bottom: 0.3rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* ปุ่มลูกตา (Eye Icon) */
+.position-relative {
+    position: relative;
+}
+
+.eye-icon-btn {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.eye-icon-btn:hover {
+    color: white;
+}
+
+/* ปุ่ม Login */
+.login-glow-btn {
+    transition: all 0.3s ease;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.login-glow-btn:hover {
+    background-color: #fff;
+    color: #6a11cb;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px);
+}
+
+/* Responsive: ถ้าหน้าจอเล็กมากๆ ให้ยอม Scroll ได้ */
+@media (max-height: 700px) {
+    .gradient-custom {
+        overflow-y: auto;
+        padding-top: 20px;
+        padding-bottom: 20px;
+    }
+}
