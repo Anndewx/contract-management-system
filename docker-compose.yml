@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: toy_store_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234  # <-- กำหนดรหัสผ่านตรงนี้ได้เลย (ผมตั้งให้เป็น 1234)
+      MYSQL_DATABASE: contractmanagement # <-- ชื่อ Database ที่จะสร้างให้เองอัตโนมัติ
+    ports:
+      - "3308:3306" # ⚠️ ผมเปลี่ยนเป็น Port 3307 เพื่อหนี MySQL ตัวเดิมในเครื่องคุณ (จะได้ไม่ตีกัน)
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:

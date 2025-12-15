@@ -1,0 +1,123 @@
+/* SaveConfirmation.css */
+
+/* พื้นหลังสีเทาเข้ม ต้องอยู่ชั้นบนสุด (z-index สูงๆ) */
+.save-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4); /* สีดำจางๆ */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999; /* สูงกว่า Bootstrap (1055) แน่นอน */
+  backdrop-filter: blur(2px); /* เบลอฉากหลังนิดๆ ให้ดูมิติ */
+}
+
+/* กล่อง Modal */
+.save-modal-content {
+  background-color: white;
+  width: 550px; /* ความกว้างตามรูป */
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  text-align: center;
+  font-family: 'Sarabun', sans-serif;
+  animation: popUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* ส่วนหัวสีฟ้าอ่อน */
+.save-modal-header {
+  background-color: #f0f6fa; /* สีพื้นหลังส่วนหัวตามรูป */
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #e1e8ed;
+}
+
+.save-status-badge {
+  color: #004a80;
+  font-weight: bold;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.save-checkmark-icon {
+  background-color: #22c55e; /* สีเขียว */
+  color: white;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+}
+
+/* ส่วนเนื้อหา */
+.save-modal-body {
+  padding: 40px 30px;
+}
+
+.save-modal-body h2 {
+  margin: 0 0 30px 0;
+  font-size: 26px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* ปุ่มกด */
+.save-modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.btn-save-confirm {
+  background-color: #3498db; /* สีฟ้า */
+  color: white;
+  border: none;
+  padding: 10px 35px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.btn-save-confirm:hover {
+  background-color: #2980b9;
+}
+
+.btn-save-cancel {
+  background-color: #d1d1d1; /* สีเทา */
+  color: white;
+  border: none;
+  padding: 10px 35px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.btn-save-cancel:hover {
+  background-color: #b0b0b0;
+}
+
+/* วันที่ด้านล่าง */
+.save-timestamp {
+  font-size: 13px;
+  color: #666;
+  margin-top: 10px;
+}
+
+/* Animation เด้งดึ๋ง */
+@keyframes popUp {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
