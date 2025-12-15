@@ -1,0 +1,44 @@
+/* Dashboard Background */
+.dashboard-bg {
+    background-color: #f8fafc; /* สีพื้นหลังเทาอ่อนมากๆ สบายตา */
+    min-height: 100vh;
+}
+
+/* Custom Colors Palette */
+.text-blue { color: #3b82f6 !important; }
+.bg-blue-light { background-color: #dbeafe !important; }
+
+.text-orange { color: #f97316 !important; }
+.bg-orange-light { background-color: #ffedd5 !important; }
+
+.text-green { color: #10b981 !important; }
+.bg-green-light { background-color: #d1fae5 !important; }
+
+.text-purple { color: #8b5cf6 !important; }
+.bg-purple-light { background-color: #ede9fe !important; }
+
+/* Icon Boxes */
+.icon-box {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%; /* วงกลม */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+/* Table Styling */
+.border-bottom-dash {
+    border-bottom: 1px dashed #e5e7eb !important;
+}
+
+/* Scrollbar customization (Optional) */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
