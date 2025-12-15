@@ -1,38 +1,44 @@
-#wrapper {
-    overflow-x: hidden;
-    height: 100vh; /* เต็มจอ */
-}
-
-#sidebar-wrapper {
+/* Dashboard Background */
+.dashboard-bg {
+    background-color: #f8fafc; /* สีพื้นหลังเทาอ่อนมากๆ สบายตา */
     min-height: 100vh;
-    margin-left: -15rem;
-    -webkit-transition: margin .25s ease-out;
-    -moz-transition: margin .25s ease-out;
-    -o-transition: margin .25s ease-out;
-    transition: margin .25s ease-out;
 }
 
-#sidebar-wrapper .sidebar-heading {
-    padding: 0.875rem 1.25rem;
-    font-size: 1.2rem;
-    font-weight: bold;
+/* Custom Colors Palette */
+.text-blue { color: #3b82f6 !important; }
+.bg-blue-light { background-color: #dbeafe !important; }
+
+.text-orange { color: #f97316 !important; }
+.bg-orange-light { background-color: #ffedd5 !important; }
+
+.text-green { color: #10b981 !important; }
+.bg-green-light { background-color: #d1fae5 !important; }
+
+.text-purple { color: #8b5cf6 !important; }
+.bg-purple-light { background-color: #ede9fe !important; }
+
+/* Icon Boxes */
+.icon-box {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%; /* วงกลม */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
 }
 
-#wrapper.toggled #sidebar-wrapper {
-    margin-left: 0;
+/* Table Styling */
+.border-bottom-dash {
+    border-bottom: 1px dashed #e5e7eb !important;
 }
 
-#page-content-wrapper {
-    min-width: 100vw;
+/* Scrollbar customization (Optional) */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
 }
-
-@media (min-width: 768px) {
-    #sidebar-wrapper {
-        margin-left: 0;
-    }
-
-    #page-content-wrapper {
-        min-width: 0;
-        width: 100%;
-    }
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
 }

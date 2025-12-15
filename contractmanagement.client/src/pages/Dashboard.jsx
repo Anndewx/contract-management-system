@@ -1,445 +1,232 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { 
+  faFileAlt, faFileContract, faCheckCircle, faCalendarAlt 
+} from "@fortawesome/free-solid-svg-icons";
+
+// Import Components สำหรับกราฟ
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Title } from 'chart.js';
+import { Pie, Line } from 'react-chartjs-2';
+import './Dashboard.css'; // Import CSS ที่เราจะสร้าง
+
+// ลงทะเบียน ChartJS
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Title);
 
 function Dashboard() {
   const navigate = useNavigate();
 
-  // เช็คความปลอดภัย: ถ้าไม่มี Token ให้ดีดกลับไปหน้า Login
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/'); 
-    }
+    if (!token) navigate('/'); 
   }, [navigate]);
 
+  // --- ข้อมูลกราฟวงกลม (Pie Chart) ---
+  const pieData = {
+    labels: ['เสร็จสิ้นโครงการ', 'ยังไม่ได้ดำเนินการ', 'ระหว่างดำเนินการ', 'ยกเลิกโครงการ'],
+    datasets: [{
+      data: [25, 25, 32, 18],
+      backgroundColor: ['#6366f1', '#3b82f6', '#0ea5e9', '#ef4444'],
+      borderWidth: 0,
+    }],
+  };
+
+  const pieOptions = {
+    plugins: {
+      legend: { position: 'right', labels: { usePointStyle: true, boxWidth: 8, font: { family: 'Prompt', size: 12 } } }
+    },
+    maintainAspectRatio: false
+  };
+
+  // --- ข้อมูลกราฟเส้น (Line Chart) ---
+  const lineData = {
+    labels: ['Oct 2021', 'Nov 2021', 'Dec 2021', 'Jan 2022', 'Feb 2022', 'Mar 2022'],
+    datasets: [
+      {
+        label: 'Achieved',
+        data: [2.5, 4.2, 3.8, 4.5, 3.2, 4.0],
+        borderColor: '#f97316',
+        backgroundColor: 'rgba(249, 115, 22, 0.2)',
+        tension: 0.4, // เส้นโค้ง
+        pointRadius: 0,
+      },
+      {
+        label: 'Target',
+        data: [2.0, 2.8, 2.2, 2.5, 3.5, 2.8],
+        borderColor: '#6366f1',
+        backgroundColor: 'rgba(99, 102, 241, 0.2)',
+        tension: 0.4, // เส้นโค้ง
+        pointRadius: 0,
+      },
+    ],
+  };
+
+  const lineOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'top', align: 'start', labels: { usePointStyle: true, boxWidth: 8 } }
+    },
+    scales: {
+      y: { beginAtZero: true, grid: { color: '#f3f4f6' } },
+      x: { grid: { display: false } }
+    }
+  };
+
+  // --- ข้อมูล Mock รายการ ---
+  const projectsToSend = [
+    { name: 'โครงการจ้างบำรุงรักษาฯ', unit: 'ส.กทม.', period: 'งวดที่ 1', date: '26/9/68' },
+    { name: 'โครงการ...', unit: 'สตช. กระทรวงพาณิชย์', period: 'งวดที่ 1', date: '26/8/68' },
+    { name: 'โครงการ...', unit: 'ศสป.', period: 'งวดที่ 1', date: '26/9/68' },
+    { name: 'โครงการ...', unit: 'อพวช.', period: 'งวดที่ 1', date: '26/9/68' },
+  ];
+
   return (
-    // ไม่ต้องมี <div id="wrapper"> หรือ Sidebar/Topbar แล้ว เพราะ Layout จัดการให้
-    <div className="container-fluid">
+    <div className="container-fluid p-4 dashboard-bg">
       
-      {/* Page Heading */}
-      <div className="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 className="h3 mb-0 text-gray-800">Dashboard</h1>
-        <a
-          href="#"
-          className="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"
-        >
-          <i className="fas fa-download fa-sm text-white-50" /> Generate Report
-        </a>
+      {/* Header */}
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h4 className="fw-bold text-dark m-0">Dashboard</h4>
       </div>
 
-      {/* Content Row (การ์ด 4 ใบ) */}
-      <div className="row">
-        {/* Earnings (Monthly) Card Example */}
-        <div className="col-xl-3 col-md-6 mb-4">
-          <div className="card border-left-primary shadow h-100 py-2">
+      {/* --- Section 1: KPI Cards --- */}
+      <div className="row g-4 mb-4">
+        {/* Card 1 */}
+        <div className="col-12 col-md-4">
+          <div className="card border-0 shadow-sm rounded-4 h-100 p-3">
             <div className="card-body">
-              <div className="row no-gutters align-items-center">
-                <div className="col mr-2">
-                  <div className="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                    Earnings (Monthly)
-                  </div>
-                  <div className="h5 mb-0 font-weight-bold text-gray-800">
-                    $40,000
-                  </div>
-                </div>
-                <div className="col-auto">
-                  <i className="fas fa-calendar fa-2x text-gray-300" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Earnings (Annual) Card Example */}
-        <div className="col-xl-3 col-md-6 mb-4">
-          <div className="card border-left-success shadow h-100 py-2">
-            <div className="card-body">
-              <div className="row no-gutters align-items-center">
-                <div className="col mr-2">
-                  <div className="text-xs font-weight-bold text-success text-uppercase mb-1">
-                    Earnings (Annual)
-                  </div>
-                  <div className="h5 mb-0 font-weight-bold text-gray-800">
-                    $215,000
-                  </div>
-                </div>
-                <div className="col-auto">
-                  <i className="fas fa-dollar-sign fa-2x text-gray-300" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Tasks Card Example */}
-        <div className="col-xl-3 col-md-6 mb-4">
-          <div className="card border-left-info shadow h-100 py-2">
-            <div className="card-body">
-              <div className="row no-gutters align-items-center">
-                <div className="col mr-2">
-                  <div className="text-xs font-weight-bold text-info text-uppercase mb-1">
-                    Tasks
-                  </div>
-                  <div className="row no-gutters align-items-center">
-                    <div className="col-auto">
-                      <div className="h5 mb-0 mr-3 font-weight-bold text-gray-800">
-                        50%
-                      </div>
+                <h6 className="fw-bold text-dark mb-4">ยังไม่ได้ดำเนินการ</h6>
+                <div className="d-flex align-items-center">
+                    <div className="icon-box bg-blue-light text-blue me-3">
+                        <FontAwesomeIcon icon={faFileAlt} />
                     </div>
-                    <div className="col">
-                      <div className="progress progress-sm mr-2">
-                        <div
-                          className="progress-bar bg-info"
-                          role="progressbar"
-                          style={{ width: "50%" }}
-                          aria-valuenow={50}
-                          aria-valuemin={0}
-                          aria-valuemax={100}
-                        />
-                      </div>
+                    <div>
+                        <h2 className="fw-bold mb-0 text-dark">122</h2>
+                        <small className="text-muted">โครงการ</small>
                     </div>
-                  </div>
                 </div>
-                <div className="col-auto">
-                  <i className="fas fa-clipboard-list fa-2x text-gray-300" />
-                </div>
-              </div>
             </div>
           </div>
         </div>
 
-        {/* Pending Requests Card Example */}
-        <div className="col-xl-3 col-md-6 mb-4">
-          <div className="card border-left-warning shadow h-100 py-2">
+        {/* Card 2 */}
+        <div className="col-12 col-md-4">
+          <div className="card border-0 shadow-sm rounded-4 h-100 p-3">
             <div className="card-body">
-              <div className="row no-gutters align-items-center">
-                <div className="col mr-2">
-                  <div className="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                    Pending Requests
-                  </div>
-                  <div className="h5 mb-0 font-weight-bold text-gray-800">
-                    18
-                  </div>
+                <h6 className="fw-bold text-dark mb-4">อยู่ระหว่างดำเนินการ</h6>
+                <div className="d-flex align-items-center">
+                    <div className="icon-box bg-orange-light text-orange me-3">
+                        <FontAwesomeIcon icon={faFileContract} />
+                    </div>
+                    <div>
+                        <h2 className="fw-bold mb-0 text-dark">50</h2>
+                        <small className="text-muted">โครงการ</small>
+                    </div>
                 </div>
-                <div className="col-auto">
-                  <i className="fas fa-comments fa-2x text-gray-300" />
+            </div>
+          </div>
+        </div>
+
+        {/* Card 3 */}
+        <div className="col-12 col-md-4">
+          <div className="card border-0 shadow-sm rounded-4 h-100 p-3">
+            <div className="card-body">
+                <h6 className="fw-bold text-dark mb-4">เสร็จสิ้นโครงการ</h6>
+                <div className="d-flex align-items-center">
+                    <div className="icon-box bg-green-light text-green me-3">
+                        <FontAwesomeIcon icon={faCheckCircle} />
+                    </div>
+                    <div>
+                        <h2 className="fw-bold mb-0 text-dark">99</h2>
+                        <small className="text-muted">โครงการ</small>
+                    </div>
                 </div>
-              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Content Row (กราฟ) */}
-      <div className="row">
-        {/* Area Chart */}
-        <div className="col-xl-8 col-lg-7">
-          <div className="card shadow mb-4">
-            {/* Card Header - Dropdown */}
-            <div className="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-              <h6 className="m-0 font-weight-bold text-primary">
-                Earnings Overview
-              </h6>
-              <div className="dropdown no-arrow">
-                <a
-                  className="dropdown-toggle"
-                  href="#"
-                  role="button"
-                  id="dropdownMenuLink"
-                  data-toggle="dropdown"
-                  aria-haspopup="true"
-                  aria-expanded="false"
-                >
-                  <i className="fas fa-ellipsis-v fa-sm fa-fw text-gray-400" />
-                </a>
-                <div
-                  className="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                  aria-labelledby="dropdownMenuLink"
-                >
-                  <div className="dropdown-header">Dropdown Header:</div>
-                  <a className="dropdown-item" href="#">
-                    Action
-                  </a>
-                  <a className="dropdown-item" href="#">
-                    Another action
-                  </a>
-                  <div className="dropdown-divider" />
-                  <a className="dropdown-item" href="#">
-                    Something else here
-                  </a>
-                </div>
-              </div>
-            </div>
-            {/* Card Body */}
-            <div className="card-body">
-              <div className="chart-area">
-                <canvas id="myAreaChart" />
-              </div>
-            </div>
-          </div>
-        </div>
-
+      {/* --- Section 2: Middle Row (Pie + List + Table) --- */}
+      <div className="row g-4 mb-4">
         {/* Pie Chart */}
-        <div className="col-xl-4 col-lg-5">
-          <div className="card shadow mb-4">
-            {/* Card Header - Dropdown */}
-            <div className="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-              <h6 className="m-0 font-weight-bold text-primary">
-                Revenue Sources
-              </h6>
-              <div className="dropdown no-arrow">
-                <a
-                  className="dropdown-toggle"
-                  href="#"
-                  role="button"
-                  id="dropdownMenuLink"
-                  data-toggle="dropdown"
-                  aria-haspopup="true"
-                  aria-expanded="false"
-                >
-                  <i className="fas fa-ellipsis-v fa-sm fa-fw text-gray-400" />
-                </a>
-                <div
-                  className="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                  aria-labelledby="dropdownMenuLink"
-                >
-                  <div className="dropdown-header">Dropdown Header:</div>
-                  <a className="dropdown-item" href="#">
-                    Action
-                  </a>
-                  <a className="dropdown-item" href="#">
-                    Another action
-                  </a>
-                  <div className="dropdown-divider" />
-                  <a className="dropdown-item" href="#">
-                    Something else here
-                  </a>
+        <div className="col-12 col-lg-4">
+            <div className="card border-0 shadow-sm rounded-4 h-100 p-3">
+                <div className="card-body">
+                    <h6 className="fw-bold text-dark mb-3">สถานะดำเนินการทั้งหมด</h6>
+                    <div style={{ height: '220px' }}>
+                        <Pie data={pieData} options={pieOptions} />
+                    </div>
                 </div>
-              </div>
             </div>
-            {/* Card Body */}
-            <div className="card-body">
-              <div className="chart-pie pt-4 pb-2">
-                <canvas id="myPieChart" />
-              </div>
-              <div className="mt-4 text-center small">
-                <span className="mr-2">
-                  <i className="fas fa-circle text-primary" /> Direct
-                </span>
-                <span className="mr-2">
-                  <i className="fas fa-circle text-success" /> Social
-                </span>
-                <span className="mr-2">
-                  <i className="fas fa-circle text-info" /> Referral
-                </span>
-              </div>
+        </div>
+
+        {/* Project List */}
+        <div className="col-12 col-lg-4">
+            <div className="card border-0 shadow-sm rounded-4 h-100 p-3">
+                <div className="card-body">
+                    <h6 className="fw-bold text-dark mb-3">โครงการ ที่ต้องส่ง</h6>
+                    <div className="list-group list-group-flush">
+                        {projectsToSend.map((item, idx) => (
+                            <div key={idx} className="d-flex justify-content-between align-items-start py-2 border-bottom-0 mb-2">
+                                <div>
+                                    <div className="fw-bold text-dark small">{item.name}</div>
+                                    <small className="text-muted">{item.unit}</small>
+                                </div>
+                                <div className="text-end">
+                                    <div className="fw-bold small text-dark">{item.period}</div>
+                                    <span className="badge bg-purple-light text-purple rounded-pill fw-normal">{item.date}</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </div>
-          </div>
+        </div>
+
+        {/* Project Count Table */}
+        <div className="col-12 col-lg-4">
+            <div className="card border-0 shadow-sm rounded-4 h-100 p-3">
+                <div className="card-body">
+                    <h6 className="fw-bold text-dark mb-3">จำนวนโครงการ</h6>
+                    <div className="table-responsive">
+                        <table className="table table-borderless align-middle">
+                            <thead className="border-bottom">
+                                <tr className="text-muted small">
+                                    <th>ปีงบประมาณ</th>
+                                    <th className="text-end">โครงการทั้งหมด</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {[
+                                    { year: '2025', count: 79 },
+                                    { year: '2024', count: 131 },
+                                    { year: '2023', count: 66 },
+                                    { year: '2022', count: 86 },
+                                ].map((row, idx) => (
+                                    <tr key={idx} className="border-bottom-dash">
+                                        <td className="text-dark fw-bold">{row.year}</td>
+                                        <td className="text-end text-muted fst-italic">{row.count}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
       </div>
 
-      {/* Content Row (โปรเจกต์) */}
-      <div className="row">
-        {/* Content Column */}
-        <div className="col-lg-6 mb-4">
-          {/* Project Card Example */}
-          <div className="card shadow mb-4">
-            <div className="card-header py-3">
-              <h6 className="m-0 font-weight-bold text-primary">
-                Projects
-              </h6>
-            </div>
-            <div className="card-body">
-              <h4 className="small font-weight-bold">
-                Server Migration <span className="float-right">20%</span>
-              </h4>
-              <div className="progress mb-4">
-                <div
-                  className="progress-bar bg-danger"
-                  role="progressbar"
-                  style={{ width: "20%" }}
-                  aria-valuenow={20}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                />
-              </div>
-              <h4 className="small font-weight-bold">
-                Sales Tracking <span className="float-right">40%</span>
-              </h4>
-              <div className="progress mb-4">
-                <div
-                  className="progress-bar bg-warning"
-                  role="progressbar"
-                  style={{ width: "40%" }}
-                  aria-valuenow={40}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                />
-              </div>
-              <h4 className="small font-weight-bold">
-                Customer Database <span className="float-right">60%</span>
-              </h4>
-              <div className="progress mb-4">
-                <div
-                  className="progress-bar"
-                  role="progressbar"
-                  style={{ width: "60%" }}
-                  aria-valuenow={60}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                />
-              </div>
-              <h4 className="small font-weight-bold">
-                Payout Details <span className="float-right">80%</span>
-              </h4>
-              <div className="progress mb-4">
-                <div
-                  className="progress-bar bg-info"
-                  role="progressbar"
-                  style={{ width: "80%" }}
-                  aria-valuenow={80}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                />
-              </div>
-              <h4 className="small font-weight-bold">
-                Account Setup <span className="float-right">Complete!</span>
-              </h4>
-              <div className="progress">
-                <div
-                  className="progress-bar bg-success"
-                  role="progressbar"
-                  style={{ width: "100%" }}
-                  aria-valuenow={100}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Color System */}
-          <div className="row">
-            <div className="col-lg-6 mb-4">
-              <div className="card bg-primary text-white shadow">
+      {/* --- Section 3: Performance Chart --- */}
+      <div className="row g-4">
+        <div className="col-12">
+            <div className="card border-0 shadow-sm rounded-4 p-3">
                 <div className="card-body">
-                  Primary
-                  <div className="text-white-50 small">#4e73df</div>
+                    <h5 className="fw-bold text-dark mb-4">Performance</h5>
+                    <div style={{ height: '300px' }}>
+                        <Line data={lineData} options={lineOptions} />
+                    </div>
                 </div>
-              </div>
             </div>
-            <div className="col-lg-6 mb-4">
-              <div className="card bg-success text-white shadow">
-                <div className="card-body">
-                  Success
-                  <div className="text-white-50 small">#1cc88a</div>
-                </div>
-              </div>
-            </div>
-            <div className="col-lg-6 mb-4">
-              <div className="card bg-info text-white shadow">
-                <div className="card-body">
-                  Info
-                  <div className="text-white-50 small">#36b9cc</div>
-                </div>
-              </div>
-            </div>
-            <div className="col-lg-6 mb-4">
-              <div className="card bg-warning text-white shadow">
-                <div className="card-body">
-                  Warning
-                  <div className="text-white-50 small">#f6c23e</div>
-                </div>
-              </div>
-            </div>
-            <div className="col-lg-6 mb-4">
-              <div className="card bg-danger text-white shadow">
-                <div className="card-body">
-                  Danger
-                  <div className="text-white-50 small">#e74a3b</div>
-                </div>
-              </div>
-            </div>
-            <div className="col-lg-6 mb-4">
-              <div className="card bg-secondary text-white shadow">
-                <div className="card-body">
-                  Secondary
-                  <div className="text-white-50 small">#858796</div>
-                </div>
-              </div>
-            </div>
-            <div className="col-lg-6 mb-4">
-              <div className="card bg-light text-black shadow">
-                <div className="card-body">
-                  Light
-                  <div className="text-black-50 small">#f8f9fc</div>
-                </div>
-              </div>
-            </div>
-            <div className="col-lg-6 mb-4">
-              <div className="card bg-dark text-white shadow">
-                <div className="card-body">
-                  Dark
-                  <div className="text-white-50 small">#5a5c69</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="col-lg-6 mb-4">
-          {/* Illustrations */}
-          <div className="card shadow mb-4">
-            <div className="card-header py-3">
-              <h6 className="m-0 font-weight-bold text-primary">
-                Illustrations
-              </h6>
-            </div>
-            <div className="card-body">
-              <div className="text-center">
-                <img
-                  className="img-fluid px-3 px-sm-4 mt-3 mb-4"
-                  style={{ width: "25rem" }}
-                  src="img/undraw_posting_photo.svg"
-                  alt="..."
-                />
-              </div>
-              <p>
-                Add some quality, svg illustrations to your project courtesy
-                of{" "}
-                <a target="_blank" rel="nofollow" href="https://undraw.co/">
-                  unDraw
-                </a>
-                , a constantly updated collection of beautiful svg images
-                that you can use completely free and without attribution!
-              </p>
-              <a target="_blank" rel="nofollow" href="https://undraw.co/">
-                Browse Illustrations on unDraw →
-              </a>
-            </div>
-          </div>
-
-          {/* Approach */}
-          <div className="card shadow mb-4">
-            <div className="card-header py-3">
-              <h6 className="m-0 font-weight-bold text-primary">
-                Development Approach
-              </h6>
-            </div>
-            <div className="card-body">
-              <p>
-                SB Admin 2 makes extensive use of Bootstrap 4 utility
-                classes in order to reduce CSS bloat and poor page
-                performance. Custom CSS classes are used to create custom
-                components and custom utility classes.
-              </p>
-              <p className="mb-0">
-                Before working with this theme, you should become familiar
-                with the Bootstrap framework, especially the utility
-                classes.
-              </p>
-            </div>
-          </div>
         </div>
       </div>
 

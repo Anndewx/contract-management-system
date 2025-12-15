@@ -1,85 +1,131 @@
-/* Login.css */
+/* Login.css - Final World Class Fix (Gap Fixed) */
 
+/* 1. พื้นหลัง (Main Background) */
 .gradient-custom {
-  background: #6a11cb;
-  background: -webkit-linear-gradient(to right, rgba(106, 17, 203, 1), rgba(37, 117, 252, 1));
-  background: linear-gradient(to right, rgba(106, 17, 203, 1), rgba(37, 117, 252, 1));
+  background-image: 
+      url('/logo-innovation.png'), 
+      linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); 
+
+  /* ตำแหน่งโลโก้บนซ้าย */
+  background-position: top 30px left 30px, center center;
   
-  /* ล็อคความสูงและจัดการ Overflow */
+  /* ขนาดโลโก้บนซ้าย (จอใหญ่ 120px กำลังสวย) */
+  background-size: 120px auto, cover; 
+  
+  background-repeat: no-repeat, no-repeat;
   min-height: 100vh;
   width: 100vw;
-  overflow: hidden; /* ซ่อน Scrollbar */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
 }
 
-/* ปรับแต่ง Input ให้เข้ากับธีมมืด */
-.form-control {
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: white !important;
-    border-radius: 0.5rem;
-    padding: 0.75rem 1rem; /* Padding พอเหมาะ ไม่ใหญ่เทอะทะแบบ lg */
-}
-
-.form-control:focus {
-    background-color: rgba(255, 255, 255, 0.2) !important;
-    border-color: #fff;
-    box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.1);
-}
-
-.form-control::placeholder {
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 0.9rem;
-}
-
-/* Label เล็กๆ ด้านบน Input */
-.form-label.small {
-    font-size: 0.85rem;
-    margin-bottom: 0.3rem;
-    color: rgba(255, 255, 255, 0.8);
-}
-
-/* ปุ่มลูกตา (Eye Icon) */
-.position-relative {
-    position: relative;
-}
-
-.eye-icon-btn {
+/* แสง Ambient */
+.gradient-custom::before {
+    content: '';
     position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-    color: rgba(255, 255, 255, 0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100vw; height: 100vh;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 60%);
+    filter: blur(50px);
+    z-index: 0;
 }
 
-.eye-icon-btn:hover {
+/* 2. กล่อง Login */
+.gradient-custom .card {
+    position: relative;
+    z-index: 1;
+    background-color: rgba(15, 23, 42, 0.9) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(20px); 
+    -webkit-backdrop-filter: blur(20px);
     color: white;
+    width: 100%;
+    max-width: 400px;
 }
+
+/* --- [แก้จุดสำคัญ] โลโก้ตรงกลาง (จอใหญ่) --- */
+.gradient-custom .card img.logo-image {
+    height: 180px !important; /* ใหญ่ชัดเจน */
+    width: auto !important;
+    max-width: 100% !important;
+    
+    /* 🔴 แก้ไข: ลดระยะห่างให้ชิดกับหัวข้อ "เข้าสู่ระบบ" */
+    margin-bottom: 10px; 
+    
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+}
+
+/* 3. Input Fields */
+.gradient-custom .form-control {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ffffff !important;
+    border-radius: 8px;
+    padding: 0 16px;
+    font-size: 0.95rem;
+    height: 48px;
+    transition: all 0.2s ease;
+}
+
+.gradient-custom .form-control:focus {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+}
+.gradient-custom .form-control::placeholder { color: rgba(148, 163, 184, 0.5); }
+.gradient-custom .form-label.small { color: #cbd5e1 !important; margin-bottom: 6px; font-weight: 500; }
+.gradient-custom h2 { font-weight: 700; letter-spacing: 0.5px; margin-bottom: 8px; font-size: 1.75rem; }
+.gradient-custom p.text-white-50 { font-size: 0.9rem; color: #94a3b8 !important; margin-bottom: 30px; }
 
 /* ปุ่ม Login */
 .login-glow-btn {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    border: none; color: white; font-weight: 600;
+    padding: 12px; border-radius: 8px; font-size: 1rem;
     transition: all 0.3s ease;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    letter-spacing: 1px;
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+    margin-top: 10px;
 }
-
 .login-glow-btn:hover {
-    background-color: #fff;
-    color: #6a11cb;
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
     transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.5);
 }
+.gradient-custom .eye-icon-btn {
+    color: #94a3b8;
+    position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
+    cursor: pointer; z-index: 10;
+}
+.gradient-custom .eye-icon-btn:hover { color: #fff; }
+.gradient-custom .position-relative { position: relative; }
 
-/* Responsive: ถ้าหน้าจอเล็กมากๆ ให้ยอม Scroll ได้ */
-@media (max-height: 700px) {
+
+/* --- Responsive Fix (แก้ปัญหาโน้ตบุ๊ก) --- */
+@media (max-height: 900px) {
     .gradient-custom {
-        overflow-y: auto;
-        padding-top: 20px;
-        padding-bottom: 20px;
+        display: block !important; 
+        overflow-y: auto !important;
+        padding-top: 100px !important; 
+        padding-bottom: 40px !important;
+
+        background-position: top 20px left 25px, center center !important;
+        
+        /* ขนาดโลโก้บนซ้าย (จอเล็ก 100px) */
+        background-size: 150px auto, cover !important; 
+    }
+
+    .gradient-custom .card { margin: 0 auto 30px auto; }
+    .gradient-custom .card .card-body { padding: 2rem !important; }
+    
+    /* โลโก้ตรงกลาง (จอเล็ก) */
+    .gradient-custom .card img.logo-image { 
+        height: 120px !important; /* ขนาดพอดีจอเล็ก */
+        
+        /* 🔴 แก้ไข: ลดระยะห่างให้ชิดกันในจอโน้ตบุ๊กด้วย */
+        margin-bottom: 1px !important; 
     }
 }
