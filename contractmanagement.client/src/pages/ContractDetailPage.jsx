@@ -30,7 +30,7 @@ const ContractDetailPage = () => {
   const [showSubContractModal, setShowSubContractModal] = useState(false);
   const [showSaveConfirm, setShowSaveConfirm] = useState(false);
 
-  // --- Mock Data (คงเดิม) ---
+  // --- Mock Data ---
   const payments = [
     { id: 1, desc: 'รายงานผลการดำเนินงาน (Progress Report)', date: '13 ม.ค. 2568', percent: '40%', amount: '900,000', docs: 4, usb: 1 },
     { id: 2, desc: 'รายงานฉบับสมบูรณ์ (Final Report)', date: '27 พ.ค. 2568', percent: '60%', amount: '1,200,000', docs: 4, usb: 1 },
@@ -77,26 +77,43 @@ const ContractDetailPage = () => {
       <div className="bg-white p-4 rounded-3 shadow-sm mb-4">
         <div className="row g-4">
             <div className="col-12 col-lg-8">
+                {/* เปลี่ยนสีหัวข้อ */}
                 <h5 className="fw-bold mb-4" style={{ color: '#1e293b', fontSize: '1rem' }}>ข้อมูลโครงการเบื้องต้น</h5>
                 <div className="row g-3">
-                    {/* ปรับ col-md-6 เป็น col-12 col-md-6 เพื่อให้มือถือเต็มจอ */}
-                    <div className="col-12 col-md-6"><label className="form-label fw-bold small text-muted">สัญญาเลขที่ <span className="text-danger">*</span></label><input type="text" className="form-control" defaultValue="จ.2/2568" /></div>
-                    <div className="col-12 col-md-6"><label className="form-label fw-bold small text-muted">ลงวันที่ <span className="text-danger">*</span></label><input type="text" className="form-control" defaultValue="29 พฤศจิกายน 2567" /></div>
-                    <div className="col-12 col-md-6"><label className="form-label fw-bold small text-muted">วิธีการจ้าง <span className="text-danger">*</span></label><input type="text" className="form-control" defaultValue="ประกวดราคา" /></div>
-                    <div className="col-12 col-md-6"><label className="form-label fw-bold small text-muted">วิธีการจัดหา <span className="text-danger">*</span></label><input type="text" className="form-control text-end" defaultValue="ประกวดราคา" /></div>
+                    {/* เปลี่ยน Label เป็นสีดำ และ Input เป็นพื้นขาว */}
                     <div className="col-12 col-md-6">
-                        <label className="form-label fw-bold small text-muted">ระยะการรับประกัน</label>
+                        <label className="form-label fw-bold small" style={{ color: '#333333' }}>สัญญาเลขที่ <span className="text-danger">*</span></label>
+                        <input type="text" className="form-control" defaultValue="จ.2/2568" style={{ backgroundColor: '#FFFFFF', color: '#000000' }} />
+                    </div>
+                    <div className="col-12 col-md-6">
+                        <label className="form-label fw-bold small" style={{ color: '#333333' }}>ลงวันที่ <span className="text-danger">*</span></label>
+                        <input type="text" className="form-control" defaultValue="29 พฤศจิกายน 2567" style={{ backgroundColor: '#FFFFFF', color: '#000000' }} />
+                    </div>
+                    <div className="col-12 col-md-6">
+                        <label className="form-label fw-bold small" style={{ color: '#333333' }}>วิธีการจ้าง <span className="text-danger">*</span></label>
+                        <input type="text" className="form-control" defaultValue="ประกวดราคา" style={{ backgroundColor: '#FFFFFF', color: '#000000' }} />
+                    </div>
+                    <div className="col-12 col-md-6">
+                        <label className="form-label fw-bold small" style={{ color: '#333333' }}>วิธีการจัดหา <span className="text-danger">*</span></label>
+                        <input type="text" className="form-control text-end" defaultValue="ประกวดราคา" style={{ backgroundColor: '#FFFFFF', color: '#000000' }} />
+                    </div>
+                    <div className="col-12 col-md-6">
+                        <label className="form-label fw-bold small" style={{ color: '#333333' }}>ระยะการรับประกัน</label>
                         <div className="position-relative">
-                             <input type="text" className="form-control text-end" defaultValue="1" style={{ paddingRight: '40px' }} />
-                             <span style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', color: '#64748b', fontSize: '0.85rem' }}>ปี</span>
+                             <input type="text" className="form-control text-end" defaultValue="1" style={{ paddingRight: '40px', backgroundColor: '#FFFFFF', color: '#000000' }} />
+                             <span style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', color: '#333333', fontSize: '0.85rem' }}>ปี</span>
                         </div>
                     </div>
-                    <div className="col-12 col-md-6"><label className="form-label fw-bold small text-muted">ระยะเวลา (วัน)</label><input type="text" className="form-control text-end" defaultValue="360" /></div>
+                    <div className="col-12 col-md-6">
+                        <label className="form-label fw-bold small" style={{ color: '#333333' }}>ระยะเวลา (วัน)</label>
+                        <input type="text" className="form-control text-end" defaultValue="360" style={{ backgroundColor: '#FFFFFF', color: '#000000' }} />
+                    </div>
                 </div>
             </div>
             <div className="col-12 col-lg-4 ps-lg-5 border-start-lg">
-                <label className="form-label fw-bold small mb-3 text-muted">เอกสารแนบ</label>
-                <div className="d-flex flex-column align-items-center justify-content-center p-4 mb-4" style={{ border: '2px dashed #e2e8f0', borderRadius: '10px', backgroundColor: '#f8fafc', cursor: 'pointer' }}>
+                <label className="form-label fw-bold small mb-3" style={{ color: '#333333' }}>เอกสารแนบ</label>
+                {/* ปรับพื้นหลังส่วน Upload ให้เป็นขาวสะอาด */}
+                <div className="d-flex flex-column align-items-center justify-content-center p-4 mb-4" style={{ border: '2px dashed #e2e8f0', borderRadius: '10px', backgroundColor: '#FFFFFF', cursor: 'pointer' }}>
                     <FontAwesomeIcon icon={faCloudUploadAlt} className="text-secondary mb-2 fs-2" />
                     <span className="small text-muted">Drag files here or Browse</span>
                 </div>
@@ -117,7 +134,8 @@ const ContractDetailPage = () => {
         </div>
         <div className="table-responsive">
             <table className="table table-hover align-middle">
-                <thead className="bg-light"><tr className="small text-muted"><th>งวด</th><th>รายการ</th><th>จำนวนเงิน</th></tr></thead>
+                {/* หัวตารางสีดำ */}
+                <thead className="bg-light"><tr className="small" style={{ color: '#333333', fontWeight: 'bold' }}><th>งวด</th><th>รายการ</th><th>จำนวนเงิน</th></tr></thead>
                 <tbody>{payments.map(i=><tr key={i.id}><td>{i.id}</td><td>{i.desc}</td><td>{i.amount}</td></tr>)}</tbody>
             </table>
         </div>
@@ -129,7 +147,7 @@ const ContractDetailPage = () => {
         </div>
         <div className="table-responsive">
             <table className="table table-hover align-middle">
-                <thead className="bg-light"><tr className="small text-muted"><th>งวด</th><th>เลขที่หนังสือ</th><th>สถานะ</th></tr></thead>
+                <thead className="bg-light"><tr className="small" style={{ color: '#333333', fontWeight: 'bold' }}><th>งวด</th><th>เลขที่หนังสือ</th><th>สถานะ</th></tr></thead>
                 <tbody>{deliveries.map(i=><tr key={i.id}><td>{i.id}</td><td>{i.docNo}</td><td>{i.status}</td></tr>)}</tbody>
             </table>
         </div>
@@ -144,24 +162,24 @@ const ContractDetailPage = () => {
         <h5 className="fw-bold mb-4" style={{ color: '#1e293b', fontSize: '1rem' }}>ข้อมูลสัญญาหรือข้อตกลง</h5>
         <div className="row g-3">
              <div className="col-12">
-                 <label className="form-label fw-bold small text-muted">ชื่อผู้ว่าจ้าง *</label>
-                 <input type="text" className="form-control" defaultValue="สำนักงานกองทุนหมู่บ้านและชุมชนเมืองแห่งชาติ (สทบ.)" />
+                 <label className="form-label fw-bold small" style={{ color: '#333333' }}>ชื่อผู้ว่าจ้าง *</label>
+                 <input type="text" className="form-control" defaultValue="สำนักงานกองทุนหมู่บ้านและชุมชนเมืองแห่งชาติ (สทบ.)" style={{ backgroundColor: '#FFFFFF', color: '#000000' }} />
              </div>
              <div className="col-12 col-md-6">
-                 <label className="form-label fw-bold small text-muted">เลขประจำตัวผู้เสียภาษีอากร *</label>
-                 <input type="text" className="form-control" placeholder="Txxx-xxxxx-xxx-xxxx" />
+                 <label className="form-label fw-bold small" style={{ color: '#333333' }}>เลขประจำตัวผู้เสียภาษีอากร *</label>
+                 <input type="text" className="form-control" placeholder="Txxx-xxxxx-xxx-xxxx" style={{ backgroundColor: '#FFFFFF', color: '#000000' }} />
              </div>
              <div className="col-12 col-md-6">
-                 <label className="form-label fw-bold small text-muted">ประเภทสัญญา *</label>
-                 <input type="text" className="form-control" defaultValue="สัญญาจ้างทั่วไป" />
+                 <label className="form-label fw-bold small" style={{ color: '#333333' }}>ประเภทสัญญา *</label>
+                 <input type="text" className="form-control" defaultValue="สัญญาจ้างทั่วไป" style={{ backgroundColor: '#FFFFFF', color: '#000000' }} />
              </div>
              <div className="col-12 col-md-6">
-                 <label className="form-label fw-bold small text-muted">เลขที่สัญญา *</label>
-                 <input type="text" className="form-control" defaultValue="จ.๒/๒๕๖๘" />
+                 <label className="form-label fw-bold small" style={{ color: '#333333' }}>เลขที่สัญญา *</label>
+                 <input type="text" className="form-control" defaultValue="จ.๒/๒๕๖๘" style={{ backgroundColor: '#FFFFFF', color: '#000000' }} />
              </div>
              <div className="col-12 col-md-6">
-                 <label className="form-label fw-bold small text-muted">ลงวันที่ *</label>
-                 <input type="text" className="form-control" placeholder="dd/MMM/yyyy" />
+                 <label className="form-label fw-bold small" style={{ color: '#333333' }}>ลงวันที่ *</label>
+                 <input type="text" className="form-control" placeholder="dd/MMM/yyyy" style={{ backgroundColor: '#FFFFFF', color: '#000000' }} />
              </div>
         </div>
       </div>
@@ -169,13 +187,14 @@ const ContractDetailPage = () => {
       <div className="bg-white p-4 rounded-3 shadow-sm mb-4">
         <h5 className="fw-bold mb-4" style={{ color: '#1e293b', fontSize: '1rem' }}>ยื่นหลักประกันสัญญา</h5>
         <div className="row g-3 mb-4">
-             <div className="col-12 col-md-6"><label className="form-label fw-bold small text-muted">ประเภทหลักประกัน *</label><input type="text" className="form-control" defaultValue="หลักประกันสัญญา" /></div>
-             <div className="col-12 col-md-6"><label className="form-label fw-bold small text-muted">วันที่รับหลักประกัน *</label><input type="text" className="form-control text-end" placeholder="dd/MMM/yyyy" /></div>
-             <div className="col-12 col-md-6"><label className="form-label fw-bold small text-muted">ระยะเวลาประกันเริ่มต้นวันที่ *</label><input type="text" className="form-control text-end" placeholder="dd/MMM/yyyy" /></div>
-             <div className="col-12 col-md-6"><label className="form-label fw-bold small text-muted">จนถึงวันที่ *</label><input type="text" className="form-control text-end" placeholder="เมื่อสิ้นสุดภาระผูกพันสัญญา" /></div>
-             <div className="col-12 col-md-6"><label className="form-label fw-bold small text-muted">วงเงินประกันสัญญา (บาท)*</label><input type="text" className="form-control text-end" defaultValue="130,000" /></div>
-             <div className="col-12 col-md-6"><label className="form-label fw-bold small text-muted">อัตราร้อยละ</label><input type="text" className="form-control text-end" defaultValue="5.00" /></div>
-             <div className="col-12"><label className="form-label fw-bold small text-muted">ประเภทหลักทรัพย์</label><input type="text" className="form-control" defaultValue="หนังสือค้ำประกันอิเล็กทรอนิกส์" /></div>
+             {/* แก้ Label ดำ, Input ขาว ทั้งหมด */}
+             <div className="col-12 col-md-6"><label className="form-label fw-bold small" style={{ color: '#333333' }}>ประเภทหลักประกัน *</label><input type="text" className="form-control" defaultValue="หลักประกันสัญญา" style={{ backgroundColor: '#FFFFFF', color: '#000000' }} /></div>
+             <div className="col-12 col-md-6"><label className="form-label fw-bold small" style={{ color: '#333333' }}>วันที่รับหลักประกัน *</label><input type="text" className="form-control text-end" placeholder="dd/MMM/yyyy" style={{ backgroundColor: '#FFFFFF', color: '#000000' }} /></div>
+             <div className="col-12 col-md-6"><label className="form-label fw-bold small" style={{ color: '#333333' }}>ระยะเวลาประกันเริ่มต้นวันที่ *</label><input type="text" className="form-control text-end" placeholder="dd/MMM/yyyy" style={{ backgroundColor: '#FFFFFF', color: '#000000' }} /></div>
+             <div className="col-12 col-md-6"><label className="form-label fw-bold small" style={{ color: '#333333' }}>จนถึงวันที่ *</label><input type="text" className="form-control text-end" placeholder="เมื่อสิ้นสุดภาระผูกพันสัญญา" style={{ backgroundColor: '#FFFFFF', color: '#000000' }} /></div>
+             <div className="col-12 col-md-6"><label className="form-label fw-bold small" style={{ color: '#333333' }}>วงเงินประกันสัญญา (บาท)*</label><input type="text" className="form-control text-end" defaultValue="130,000" style={{ backgroundColor: '#FFFFFF', color: '#000000' }} /></div>
+             <div className="col-12 col-md-6"><label className="form-label fw-bold small" style={{ color: '#333333' }}>อัตราร้อยละ</label><input type="text" className="form-control text-end" defaultValue="5.00" style={{ backgroundColor: '#FFFFFF', color: '#000000' }} /></div>
+             <div className="col-12"><label className="form-label fw-bold small" style={{ color: '#333333' }}>ประเภทหลักทรัพย์</label><input type="text" className="form-control" defaultValue="หนังสือค้ำประกันอิเล็กทรอนิกส์" style={{ backgroundColor: '#FFFFFF', color: '#000000' }} /></div>
         </div>
       </div>
     </>
@@ -193,7 +212,8 @@ const ContractDetailPage = () => {
         <div className="table-responsive">
             <table className="table table-hover align-middle">
                 <thead className="bg-light">
-                    <tr className="small text-muted fw-bold">
+                    {/* หัวตารางสีดำ */}
+                    <tr className="small fw-bold" style={{ color: '#333333' }}>
                         <th className="py-3 ps-4">ลำดับ</th>
                         <th className="py-3">เลขที่เบิกจ่าย</th>
                         <th className="py-3">งวด</th>
@@ -226,17 +246,19 @@ const ContractDetailPage = () => {
         <h5 className="fw-bold mb-4">รายละเอียดอุปกรณ์</h5>
         <div className="d-flex justify-content-between mb-3">
             <div className="input-group" style={{ maxWidth: '300px' }}>
-                <span className="input-group-text bg-light border-end-0"><FontAwesomeIcon icon={faSearch} className="text-muted"/></span>
-                <input type="text" className="form-control bg-light border-start-0" placeholder="ระบุคำค้นหา" />
+                {/* ช่องค้นหาพื้นขาว */}
+                <span className="input-group-text border-end-0" style={{ backgroundColor: '#FFFFFF' }}><FontAwesomeIcon icon={faSearch} className="text-muted"/></span>
+                <input type="text" className="form-control border-start-0" placeholder="ระบุคำค้นหา" style={{ backgroundColor: '#FFFFFF' }} />
             </div>
-            <button className="btn btn-light border fw-bold small shadow-sm" onClick={() => setShowEquipmentModal(true)}>
+            {/* ปุ่มเพิ่มรายการตัวหนังสือดำ */}
+            <button className="btn btn-light border fw-bold small shadow-sm" style={{ color: '#000000' }} onClick={() => setShowEquipmentModal(true)}>
                 เพิ่มรายการ <FontAwesomeIcon icon={faPlus} className="ms-1" />
             </button>
         </div>
         <div className="table-responsive">
             <table className="table table-hover align-middle">
                 <thead className="bg-light">
-                    <tr className="small text-muted fw-bold">
+                    <tr className="small fw-bold" style={{ color: '#333333' }}>
                         <th className="py-3 ps-4">ลำดับ</th>
                         <th className="py-3">ชื่ออุปกรณ์</th>
                         <th className="py-3 text-center">จำนวน</th>
@@ -267,17 +289,17 @@ const ContractDetailPage = () => {
         <h5 className="fw-bold mb-4">ข้อมูลการติดตั้งและทดสอบ</h5>
         <div className="d-flex justify-content-between mb-3">
             <div className="input-group" style={{ maxWidth: '300px' }}>
-                <span className="input-group-text bg-light border-end-0"><FontAwesomeIcon icon={faSearch} className="text-muted"/></span>
-                <input type="text" className="form-control bg-light border-start-0" placeholder="ระบุคำค้นหา" />
+                <span className="input-group-text border-end-0" style={{ backgroundColor: '#FFFFFF' }}><FontAwesomeIcon icon={faSearch} className="text-muted"/></span>
+                <input type="text" className="form-control border-start-0" placeholder="ระบุคำค้นหา" style={{ backgroundColor: '#FFFFFF' }} />
             </div>
-            <button className="btn btn-light border fw-bold small shadow-sm" onClick={() => setShowInstallationModal(true)}>
+            <button className="btn btn-light border fw-bold small shadow-sm" style={{ color: '#000000' }} onClick={() => setShowInstallationModal(true)}>
                 เพิ่มรายการ <FontAwesomeIcon icon={faPlus} className="ms-1" />
             </button>
         </div>
         <div className="table-responsive">
             <table className="table table-hover align-middle">
                 <thead className="bg-light">
-                    <tr className="small text-muted fw-bold">
+                    <tr className="small fw-bold" style={{ color: '#333333' }}>
                         <th className="py-3 ps-4">ลำดับ</th>
                         <th className="py-3">รายละเอียดผลการติดตั้ง</th>
                         <th className="py-3">วันที่ติดตั้ง</th>
@@ -305,10 +327,10 @@ const ContractDetailPage = () => {
       <div className="bg-white p-4 rounded-3 shadow-sm mb-4">
         <h5 className="fw-bold mb-4">ข้อมูลการส่งมอบ (Delivery Information)</h5>
         <div className="row g-3">
-             <div className="col-12 col-md-6"><label className="form-label fw-bold small text-muted">วันที่ส่งมอบอุปกรณ์</label><input type="text" className="form-control bg-light" defaultValue="DD/MMM/YYYY" /></div>
-             <div className="col-12 col-md-6"><label className="form-label fw-bold small text-muted">หมายเลขใบส่งของ (DN)</label><input type="text" className="form-control bg-light" defaultValue="Xxxx" /></div>
-             <div className="col-12 col-md-6"><label className="form-label fw-bold small text-muted">ชื่อผู้รับอุปกรณ์</label><input type="text" className="form-control bg-light" defaultValue="Xxxx" /></div>
-             <div className="col-12 col-md-6"><label className="form-label fw-bold small text-muted">สถานะการส่งมอบ</label><select className="form-select bg-light"><option>ส่งมอบแล้ว</option></select></div>
+             <div className="col-12 col-md-6"><label className="form-label fw-bold small" style={{ color: '#333333' }}>วันที่ส่งมอบอุปกรณ์</label><input type="text" className="form-control" defaultValue="DD/MMM/YYYY" style={{ backgroundColor: '#FFFFFF', color: '#000000' }} /></div>
+             <div className="col-12 col-md-6"><label className="form-label fw-bold small" style={{ color: '#333333' }}>หมายเลขใบส่งของ (DN)</label><input type="text" className="form-control" defaultValue="Xxxx" style={{ backgroundColor: '#FFFFFF', color: '#000000' }} /></div>
+             <div className="col-12 col-md-6"><label className="form-label fw-bold small" style={{ color: '#333333' }}>ชื่อผู้รับอุปกรณ์</label><input type="text" className="form-control" defaultValue="Xxxx" style={{ backgroundColor: '#FFFFFF', color: '#000000' }} /></div>
+             <div className="col-12 col-md-6"><label className="form-label fw-bold small" style={{ color: '#333333' }}>สถานะการส่งมอบ</label><select className="form-select" style={{ backgroundColor: '#FFFFFF', color: '#000000' }}><option>ส่งมอบแล้ว</option></select></div>
         </div>
       </div>
     </>
@@ -326,7 +348,7 @@ const ContractDetailPage = () => {
         <div className="table-responsive">
             <table className="table table-hover align-middle">
                 <thead className="bg-light">
-                    <tr className="small text-muted fw-bold">
+                    <tr className="small fw-bold" style={{ color: '#333333' }}>
                         <th className="py-3 ps-4">ลำดับ</th>
                         <th className="py-3">บริษัทคู่สัญญา (Vendor)</th>
                         <th className="py-3">เลขที่สัญญา/PO</th>
@@ -341,7 +363,8 @@ const ContractDetailPage = () => {
                     {subContractList.map((item, index) => (
                         <tr key={item.id} style={{ borderBottom: '1px solid #f8fafc' }}>
                             <td className="py-3 ps-4">{index + 1}</td>
-                            <td className="py-3 fw-bold small text-primary">{item.vendor}</td>
+                            {/* เปลี่ยน text-primary (ฟ้า) เป็น text-dark (ดำ) */}
+                            <td className="py-3 fw-bold small text-dark">{item.vendor}</td>
                             <td className="py-3 small">{item.contractNo}</td>
                             <td className="py-3 small">{item.work}</td>
                             <td className="py-3 text-end small fw-bold">{item.amount}</td>
@@ -352,8 +375,8 @@ const ContractDetailPage = () => {
                                 </span>
                             </td>
                             <td className="py-3 small text-secondary">
-                                <FontAwesomeIcon icon={faEdit} className="me-2 cursor-pointer" />
-                                <FontAwesomeIcon icon={faTrash} className="cursor-pointer" />
+                                <FontAwesomeIcon icon={faEdit} className="me-2 cursor-pointer hover-dark" />
+                                <FontAwesomeIcon icon={faTrash} className="cursor-pointer hover-danger" />
                             </td>
                         </tr>
                     ))}
@@ -366,7 +389,7 @@ const ContractDetailPage = () => {
   return (
     <div className="container-fluid p-0">
       
-      {/* Header (Common) - ปรับ Responsive */}
+      {/* Header (Common) */}
       <div className="bg-white p-4 rounded-3 shadow-sm mb-4">
         <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center mb-3 gap-3">
             <button className="btn btn-light text-secondary" onClick={() => navigate('/contract')}>
@@ -384,7 +407,7 @@ const ContractDetailPage = () => {
             </div>
         </div>
 
-        {/* Tab Navigation - ปรับให้ Scroll ได้ในมือถือ */}
+        {/* Tab Navigation */}
         <div className="d-flex border-bottom mt-4 overflow-auto text-nowrap" style={{ borderColor: '#e2e8f0' }}>
             {['ข้อมูลโครงการ', 'ข้อมูลสัญญา', 'การเบิกจ่าย', 'รายการอุปกรณ์', 'สัญญาย่อย'].map((tab, idx) => {
                 const mapKeys = ['project_info', 'contract_info', 'disbursement', 'equipment', 'sub_contract'];
@@ -418,7 +441,14 @@ const ContractDetailPage = () => {
 
       {/* Footer */}
       <div className="d-flex justify-content-end mb-5">
-        <button className="btn btn-white border me-2 px-4 py-2 fw-bold text-secondary" onClick={() => navigate('/contract')}>ยกเลิก</button>
+        {/* เปลี่ยนปุ่มยกเลิกเป็นสีดำ */}
+        <button 
+            className="btn btn-white border me-2 px-4 py-2 fw-bold" 
+            style={{ color: '#000000' }}
+            onClick={() => navigate('/contract')}
+        >
+            ยกเลิก
+        </button>
         <button 
             className="btn btn-primary px-4 py-2 fw-bold shadow-sm" 
             style={{ backgroundColor: '#3b82f6', borderColor: '#3b82f6' }}

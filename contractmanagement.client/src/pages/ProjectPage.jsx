@@ -1,257 +1,463 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-  faPlus, faSearch, faEdit, faTrash, faFilter, faCalendarAlt, faBuilding, faLayerGroup 
+  faPlus, faSearch, faEdit, faTrash, faPaperclip, faCalendarAlt, faChevronDown, faEllipsisH, faUser, faTimes
 } from "@fortawesome/free-solid-svg-icons";
 
-// Import Modal ยืนยัน
 import SaveModal from './SaveModal';
 
+// ⚠️ ตรวจสอบ Port Backend
+const API_BASE_URL = "http://localhost:5056/api"; 
+
+// Mock Data พนักงาน
+const MOCK_EMPLOYEES = [
+    { id: 1, name: 'วิชิต ทาก้อน', role: 'Project Manager' },
+    { id: 2, name: 'ชมพูนุช จะตะกานนท์', role: 'Co-ordinator' },
+    { id: 3, name: 'ณัฐพล ใจดี', role: 'Developer' },
+    { id: 4, name: 'สมชาย ขายเก่ง', role: 'Sales' }
+];
+
 const ProjectPage = () => {
-  const [showModal, setShowModal] = useState(false); // Modal กรอกฟอร์มเดิม
-  
-  // State สำหรับเปิด/ปิด Modal ยืนยัน
+  const [projectTypes, setProjectTypes] = useState([]);
+  // eslint-disable-next-line no-unused-vars
+  const [deviceTypes, setDeviceTypes] = useState([]);
+  const [data, setData] = useState([]);
+  const [activeMenuId, setActiveMenuId] = useState(null);
+
+  // Modal State
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [selectedMemberId, setSelectedMemberId] = useState('');
+
+  const [formData, setFormData] = useState({
+    contractNumber: '',
+    title: '',
+    projectTypeId: '',
+    deviceTypeId: '',
+    procurementMethod: 'คัดเลือก',
+    evaluationMethod: 'ราคาต่ำสุด',
+    agency: 'สำนักงานกองทุนหมู่บ้านและชุมชนเมืองแห่งชาติ (สทบ.)',
+    fiscalYear: '2568',
+    status: 'จัดทำโครงการ',
+    amount: '',
+    company: 'Inno',
+    description: '',
+  });
+
+  const [showModal, setShowModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
-  // Mock Data: ข้อมูลโครงการ
-  const [data, setData] = useState([
-    { id: 1, code: '2024-063', name: 'โครงการปรับปรุงระบบเข้าออกและบันทึกเวลาปฏิบัติงาน', unit: 'กทม.', createdBy: 'nuttapong.p', date: '10 พ.ย. 2568', status: 'In Progress', statusLabel: 'จัดทำโครงการ' },
-    { id: 2, code: '2024-062', name: 'โครงการจ้างบำรุงรักษาและปรับปรุงระบบซอฟต์แวร์', unit: 'ส.กทม.', createdBy: 'nuttapong.p', date: '20 ต.ค. 2568', status: 'Draft', statusLabel: 'ร่าง TOR' },
-    { id: 3, code: '2024-061', name: 'โครงการจ้างดำเนินการบำรุงรักษาระบบพัสดุและครุภัณฑ์', unit: 'ศสป.', createdBy: 'nuttapong.p', date: '20 ต.ค. 2568', status: 'Submitted', statusLabel: 'ยื่นซองเสนอ' },
-    { id: 4, code: '2024-060', name: 'โครงการจัดจ้างบริการดูแลและบำรุงรักษาระบบสารบรรณ', unit: 'อพวช.', createdBy: 'nuttapong.p', date: '20 ต.ค. 2568', status: 'Pending', statusLabel: 'ดำเนินงาน' },
-    { id: 5, code: '2024-059', name: 'โครงการเช่าบริการวงจรสื่อสารข้อมูลความเร็วสูง', unit: 'กปน.', createdBy: 'admin', date: '15 ต.ค. 2568', status: 'In Progress', statusLabel: 'จัดทำโครงการ' },
-  ]);
+  // --- Functions ---
+  const fetchMasterData = async () => {
+    try {
+      const resProject = await fetch(`${API_BASE_URL}/ProjectType`);
+      if(resProject.ok) setProjectTypes(await resProject.json());
 
-  // Helper เลือกสี Badge ตามสถานะ
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case 'In Progress': return 'bg-primary bg-opacity-10 text-primary';
-      case 'Draft': return 'bg-secondary bg-opacity-10 text-secondary';
-      case 'Submitted': return 'bg-info bg-opacity-10 text-info';
-      case 'Pending': return 'bg-warning bg-opacity-10 text-dark';
-      default: return 'bg-light text-secondary';
+      const resDevice = await fetch(`${API_BASE_URL}/DeviceType`);
+      if(resDevice.ok) setDeviceTypes(await resDevice.json());
+    } catch (err) {
+      console.error("Error fetching master data:", err);
     }
   };
 
-  const getStatusDot = (status) => {
-    switch (status) {
-      case 'In Progress': return 'bg-primary';
-      case 'Draft': return 'bg-secondary';
-      case 'Submitted': return 'bg-info';
-      case 'Pending': return 'bg-warning';
-      default: return 'bg-secondary';
+  const fetchProjects = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/Projects`);
+      if (response.ok) {
+        const result = await response.json();
+        const mappedData = result.map(item => ({
+            id: item.id,
+            code: item.projectId,   
+            name: item.projectName,            
+            unit: item.customerName || 'กทม.', 
+            createdBy: item.createdBy || 'Admin', 
+            date: item.createdDate ? new Date(item.createdDate).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }) : '-',
+            status: item.projectStatus || 'จัดทำโครงการ',
+            isActive: true 
+        }));
+        setData(mappedData);
+      }
+    } catch (err) {
+      console.error("Error fetching projects:", err);
     }
   };
 
-  // ฟังก์ชันเมื่อกดปุ่ม "บันทึกข้อมูล" ในฟอร์ม
+  const handleDelete = async (id) => {
+    setActiveMenuId(null);
+    if (window.confirm("คุณต้องการลบโครงการนี้ใช่หรือไม่?")) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/Projects/${id}`, { method: 'DELETE' });
+        if (response.ok) fetchProjects(); 
+        else alert("ไม่สามารถลบข้อมูลได้");
+      } catch (error) {
+        console.error("Error deleting:", error);
+      }
+    }
+  }
+
+  useEffect(() => {
+    fetchMasterData();
+    fetchProjects();
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = () => setActiveMenuId(null);
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Team Logic
+  const handleAddMember = () => {
+    if (!selectedMemberId) return;
+    if (teamMembers.some(m => m.id === parseInt(selectedMemberId))) {
+        alert("รายชื่อนี้ถูกเลือกไปแล้ว");
+        return;
+    }
+    const member = MOCK_EMPLOYEES.find(m => m.id === parseInt(selectedMemberId));
+    if (member) {
+        setTeamMembers([...teamMembers, member]);
+        setSelectedMemberId(''); 
+    }
+  };
+
+  const handleRemoveMember = (id) => {
+    setTeamMembers(teamMembers.filter(m => m.id !== id));
+  };
+
+  const handleOpenModal = () => {
+    setFormData({
+        contractNumber: '', title: '', projectTypeId: '', deviceTypeId: '', 
+        procurementMethod: 'คัดเลือก', evaluationMethod: 'ราคาต่ำสุด', 
+        agency: 'สำนักงานกองทุนหมู่บ้านและชุมชนเมืองแห่งชาติ (สทบ.)',
+        fiscalYear: '2568', status: 'จัดทำโครงการ', amount: '', 
+        company: 'Inno', description: ''
+    });
+    setTeamMembers([]); 
+    setShowModal(true);
+  }
+
   const handleInitialSave = () => {
-    setShowConfirmModal(true); // เปิด Modal ยืนยัน
+    if(!formData.title || !formData.contractNumber) {
+        alert("กรุณากรอกชื่อโครงการและเลขที่โครงการ");
+        return;
+    }
+    setShowConfirmModal(true);
   };
 
-  // ฟังก์ชันเมื่อกด "ยืนยัน" จริงๆ ใน Modal ยืนยัน
-  const handleFinalConfirm = () => {
-    console.log("บันทึกข้อมูลเรียบร้อย!");
-    setShowConfirmModal(false);
-    setShowModal(false);
+  const handleFinalConfirm = async () => {
+    try {
+        const payload = {
+            projectId: formData.contractNumber,
+            projectName: formData.title,
+            projectType: formData.projectTypeId.toString(),
+            customerName: formData.agency,
+            procurementMethod: formData.procurementMethod,
+            evaluationMethod: formData.evaluationMethod,
+            fiscalYear: parseInt(formData.fiscalYear) || 2568,
+            projectStatus: formData.status,
+            projectValue: parseFloat(formData.amount) || 0,
+            companyName: formData.company,
+            projectDetail: formData.description,
+            createdBy: "Admin"
+        };
+
+        const response = await fetch(`${API_BASE_URL}/Projects`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+
+        if (response.ok) {
+            setShowConfirmModal(false);
+            setShowModal(false);
+            fetchProjects(); 
+        } else {
+            const err = await response.json();
+            alert(`❌ Error: ${JSON.stringify(err)}`);
+            setShowConfirmModal(false);
+        }
+    } catch (error) {
+        console.error("API Error:", error);
+        alert("❌ Server Error");
+        setShowConfirmModal(false);
+    }
   };
+
+  const toggleMenu = (e, id) => {
+    e.stopPropagation();
+    setActiveMenuId(activeMenuId === id ? null : id);
+  };
+
+  const renderStatusBadge = (status) => (
+    <span className="badge rounded-pill fw-medium border-0"
+        style={{ backgroundColor: '#e8f0fe', color: '#1a73e8', fontSize: '0.75rem', padding: '8px 16px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+        <span style={{width:'8px', height:'8px', backgroundColor:'#1a73e8', borderRadius:'50%', display:'inline-block'}}></span>
+        {status}
+    </span>
+  );
 
   return (
-    <div className="container-fluid p-0">
+    <div className="container-fluid px-4 py-4" style={{ backgroundColor: '#f9fafb', minHeight: '100vh' }}>
       
-      {/* --- 1. Page Header (Responsive) --- */}
-      <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
-        <div>
-            <h3 className="fw-bold mb-1" style={{ color: '#1e293b' }}>โครงการทั้งหมด</h3>
-            <span style={{ color: '#64748b', fontSize: '0.9rem' }}>รายการโครงการและสถานะการดำเนินงานประจำปี</span>
+      {/* Title */}
+      <h2 className="fw-bold mb-4" style={{ color: '#000000' }}>โครงการ</h2>
+
+      {/* Filter Bar */}
+      <div className="d-flex flex-wrap gap-3 mb-4 align-items-center">
+        <div className="bg-white border rounded shadow-sm d-flex align-items-center px-3 py-2" style={{ minWidth: '140px', cursor: 'pointer' }}>
+            <FontAwesomeIcon icon={faCalendarAlt} className="text-dark me-2"/> 
+            <span className="fw-bold text-dark me-auto">2568</span>
+            <FontAwesomeIcon icon={faChevronDown} className="text-dark small"/> 
         </div>
-        
-        <button 
-          className="btn btn-primary px-4 py-2 rounded-3 shadow-sm fw-bold d-flex align-items-center"
-          style={{ backgroundColor: '#3b82f6', borderColor: '#3b82f6', transition: 'all 0.2s' }}
-          onClick={() => setShowModal(true)}
-        >
-          <FontAwesomeIcon icon={faPlus} className="me-2" /> 
-          เพิ่มโครงการ
+        <div className="bg-white border rounded shadow-sm d-flex align-items-center px-3 py-2" style={{ minWidth: '140px', cursor: 'pointer' }}>
+            <span className="text-dark me-auto">Filter by</span>
+            <FontAwesomeIcon icon={faChevronDown} className="text-dark small"/>
+        </div>
+        <div className="flex-grow-1 d-none d-lg-block"></div>
+        <div className="position-relative" style={{ width: '250px' }}>
+            <FontAwesomeIcon icon={faSearch} className="text-dark position-absolute" style={{ left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+            <input type="text" className="form-control ps-5 border-0 bg-white shadow-sm text-dark" placeholder="ค้นหาหน่วยงาน..." style={{ borderRadius: '6px', height: '42px' }} />
+        </div>
+        <div className="position-relative" style={{ width: '250px' }}>
+            <FontAwesomeIcon icon={faSearch} className="text-dark position-absolute" style={{ left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+            <input type="text" className="form-control ps-5 border-0 bg-white shadow-sm text-dark" placeholder="ค้นหาชื่อโครงการ..." style={{ borderRadius: '6px', height: '42px' }} />
+        </div>
+        <button className="btn btn-primary px-4 fw-bold shadow-sm" style={{ backgroundColor: '#3b82f6', borderColor: '#3b82f6', height: '42px' }}>
+            ค้นหา <FontAwesomeIcon icon={faChevronDown} className="ms-2 small" rotation={270} />
         </button>
       </div>
 
-      {/* --- 2. Filter Bar (Responsive) --- */}
-      <div className="card border-0 shadow-sm mb-4 rounded-3 bg-white">
-        <div className="card-body p-3">
-            <div className="row g-3 align-items-center">
-                <div className="col-12 col-md-2"> {/* เต็มจอบนมือถือ */}
-                    <div className="position-relative">
-                        <FontAwesomeIcon icon={faCalendarAlt} className="text-muted small" style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', zIndex: 1, color: '#94a3b8' }} />
-                        <select className="form-select border-0 bg-light ps-5" style={{ height: '45px', borderRadius: '8px', color: '#1e293b', fontSize: '0.95rem', cursor: 'pointer', backgroundColor: '#f8f9fa' }}>
-                            <option>2568</option>
-                            <option>2567</option>
-                        </select>
-                    </div>
-                </div>
-                <div className="col-12 col-md-3"> {/* เต็มจอบนมือถือ */}
-                    <div className="position-relative">
-                         <FontAwesomeIcon icon={faBuilding} className="text-muted small" style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-                        <input type="text" className="form-control border-0 bg-light" style={{ paddingLeft: '40px', height: '45px', color: '#1e293b', fontSize: '0.95rem', borderRadius: '8px', backgroundColor: '#f8f9fa' }} placeholder="ค้นหาหน่วยงาน..." />
-                    </div>
-                </div>
-                <div className="col-12 col-md-5"> {/* เต็มจอบนมือถือ */}
-                    <div className="position-relative">
-                        <FontAwesomeIcon icon={faSearch} className="text-muted" style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#94a3b8' }} />
-                        <input type="text" className="form-control border-0 bg-light" style={{ paddingLeft: '45px', height: '45px', color: '#1e293b', fontSize: '0.95rem', borderRadius: '8px', fontWeight: '500', backgroundColor: '#f8f9fa' }} placeholder="ค้นหาชื่อโครงการ / รหัสโครงการ..." />
-                    </div>
-                </div>
-                <div className="col-12 col-md-2">
-                    <button className="btn btn-primary w-100 border-0 fw-bold d-flex align-items-center justify-content-center shadow-sm" style={{ height: '45px', borderRadius: '8px', backgroundColor: '#3b82f6' }}>
-                        <FontAwesomeIcon icon={faSearch} className="me-2" /> ค้นหา
-                    </button>
-                </div>
-            </div>
-        </div>
+      {/* Sub-Header */}
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h5 className="fw-bold m-0" style={{ color: '#6c757d' }}>2568 &gt;&gt; ทั้งหมด</h5>
+        <button className="btn btn-primary fw-bold shadow-sm px-3" style={{ backgroundColor: '#3b82f6', borderColor: '#3b82f6' }} onClick={handleOpenModal}>
+            <FontAwesomeIcon icon={faPlus} className="me-2" /> เพิ่มโครงการ
+        </button>
       </div>
 
-      {/* --- 3. Data Table (Responsive) --- */}
-      <div className="card border-0 shadow-sm rounded-3 overflow-hidden">
+      {/* Table */}
+      <div className="bg-white rounded-3 shadow-sm overflow-hidden">
         <div className="table-responsive">
-          <table className="table table-hover mb-0 align-middle" style={{borderCollapse: 'separate', borderSpacing: '0'}}>
-            <thead style={{ backgroundColor: '#f8fafc' }}>
+          <table className="table mb-0 align-middle">
+            <thead style={{ backgroundColor: '#f3f4f6' }}>
               <tr>
-                <th className="py-3 ps-4 border-bottom" style={{ width: '5%' }}><input type="checkbox" className="form-check-input cursor-pointer" style={{ width: '18px', height: '18px', borderColor: '#cbd5e1' }} /></th>
-                <th className="py-3 border-bottom fw-bold text-uppercase" style={{ minWidth: '250px', color: '#475569', fontSize: '0.85rem', letterSpacing: '0.5px' }}>ชื่อโครงการ / รหัส</th>
-                <th className="py-3 border-bottom fw-bold text-uppercase" style={{ minWidth: '100px', color: '#475569', fontSize: '0.85rem', letterSpacing: '0.5px' }}>หน่วยงาน</th>
-                <th className="py-3 border-bottom fw-bold text-uppercase" style={{ minWidth: '120px', color: '#475569', fontSize: '0.85rem', letterSpacing: '0.5px' }}>วันที่สร้าง</th>
-                <th className="py-3 border-bottom fw-bold text-uppercase" style={{ minWidth: '120px', color: '#475569', fontSize: '0.85rem', letterSpacing: '0.5px' }}>สร้างโดย</th>
-                <th className="py-3 border-bottom fw-bold text-uppercase text-center" style={{ minWidth: '120px', color: '#475569', fontSize: '0.85rem', letterSpacing: '0.5px' }}>สถานะ</th>
-                <th className="py-3 border-bottom fw-bold text-uppercase text-end pe-4" style={{ minWidth: '100px', color: '#475569', fontSize: '0.85rem', letterSpacing: '0.5px' }}>จัดการ</th>
+                <th className="py-3 ps-4 text-start text-dark small text-uppercase fw-bold border-bottom-0" style={{ width: '40%' }}>ชื่อโครงการ</th>
+                <th className="py-3 text-start text-dark small text-uppercase fw-bold border-bottom-0" style={{ width: '15%' }}>หน่วยงาน</th>
+                <th className="py-3 text-start text-dark small text-uppercase fw-bold border-bottom-0" style={{ width: '10%' }}>วันที่สร้าง</th>
+                <th className="py-3 text-start text-dark small text-uppercase fw-bold border-bottom-0" style={{ width: '15%' }}>สร้างโดย</th>
+                <th className="py-3 text-center text-dark small text-uppercase fw-bold border-bottom-0" style={{ width: '10%' }}>สถานะ</th>
+                <th className="py-3 text-center text-dark small text-uppercase fw-bold border-bottom-0" style={{ width: '10%' }}>ส่วนจัดการ</th>
               </tr>
             </thead>
             <tbody>
-              {data.map((item, index) => (
-                <tr key={item.id} style={{ backgroundColor: index % 2 === 0 ? '#ffffff' : '#fcfcfc', borderBottom: '1px solid #f1f5f9', transition: 'background 0.2s' }}>
-                  <td className="py-3 ps-4 border-bottom-0"><input type="checkbox" className="form-check-input cursor-pointer" style={{ width: '18px', height: '18px', borderColor: '#cbd5e1' }} /></td>
-                  <td className="py-3 border-bottom-0">
+              {data.map((item) => (
+                <tr key={item.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                  <td className="py-3 ps-4">
                       <div className="d-flex flex-column">
-                          <span className="fw-bold text-primary mb-1" style={{ fontSize: '0.85rem' }}>{item.code}</span>
-                          <span className="fw-bold" style={{ color: '#0f172a', fontSize: '0.95rem' }}>{item.name}</span>
+                          <span className="text-muted small mb-1">{item.code}</span>
+                          <span className="fw-bold text-dark">{item.name}</span>
                       </div>
                   </td>
-                  <td className="py-3 border-bottom-0"><span className="badge bg-white text-dark border fw-normal shadow-sm" style={{ fontSize: '0.85rem', color: '#475569' }}>{item.unit}</span></td>
-                  <td className="py-3 border-bottom-0" style={{ color: '#475569', fontSize: '0.9rem', fontWeight: '400' }}>{item.date}</td>
-                  <td className="py-3 border-bottom-0">
-                      <div className="d-flex align-items-center">
-                          <div className="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-2" style={{width:'28px', height:'28px', fontWeight:'bold', fontSize:'0.7rem'}}>{item.createdBy.charAt(0).toUpperCase()}</div>
-                          <span style={{ color: '#475569', fontSize: '0.9rem', fontWeight: '400' }}>{item.createdBy}</span>
-                      </div>
-                  </td>
-                  <td className="py-3 text-center border-bottom-0">
-                    <span className={`badge rounded-pill px-3 py-2 fw-bold d-inline-flex align-items-center ${getStatusBadge(item.status)}`} style={{ fontSize: '0.75rem' }}>
-                      <span className={`me-1 rounded-circle ${getStatusDot(item.status)}`} style={{width:'6px', height:'6px'}}></span>
-                      {item.statusLabel}
-                    </span>
-                  </td>
-                  <td className="py-3 text-end pe-4 border-bottom-0">
-                      <div className="btn-group">
-                        <button className="btn btn-sm btn-white border shadow-sm mx-1 rounded text-primary hover-shadow" style={{borderColor: '#e2e8f0', width:'32px', height:'32px'}} title="แก้ไข"><FontAwesomeIcon icon={faEdit} /></button>
-                        <button className="btn btn-sm btn-white border shadow-sm mx-1 rounded text-danger hover-shadow" style={{borderColor: '#e2e8f0', width:'32px', height:'32px'}} title="ลบ"><FontAwesomeIcon icon={faTrash} /></button>
-                      </div>
+                  <td className="py-3 text-dark small">{item.unit}</td>
+                  <td className="py-3 text-dark small">{item.date}</td>
+                  <td className="py-3 text-dark small">{item.createdBy}</td>
+                  <td className="py-3 text-center">{renderStatusBadge(item.status)}</td>
+                  <td className="py-3 text-center position-relative">
+                      <button className="btn btn-link text-dark p-0" onClick={(e) => toggleMenu(e, item.id)} style={{ fontSize: '1.2rem' }}>
+                        <FontAwesomeIcon icon={faEllipsisH} />
+                      </button>
+                      {activeMenuId === item.id && (
+                        <div className="position-absolute bg-white shadow rounded border py-1" style={{ right: '40px', top: '10px', zIndex: 100, minWidth: '140px' }}>
+                            <button className="dropdown-item small py-2 text-start text-dark" onClick={() => alert('แก้ไข (Mock)')}>
+                                <FontAwesomeIcon icon={faEdit} className="me-2 text-dark"/> แก้ไข
+                            </button>
+                            <div className="dropdown-divider my-0"></div>
+                            <button className="dropdown-item small py-2 text-start text-danger" onClick={() => handleDelete(item.id)}>
+                                <FontAwesomeIcon icon={faTrash} className="me-2"/> ลบ
+                            </button>
+                        </div>
+                      )}
                   </td>
                 </tr>
               ))}
+              {data.length === 0 && (
+                  <tr><td colSpan="6" className="text-center py-5 text-dark">ไม่พบข้อมูล</td></tr>
+              )}
             </tbody>
           </table>
         </div>
-        
-        {/* Pagination - Responsive (Flex wrap) */}
-        <div className="card-footer bg-white py-3 border-0 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
-            <div style={{ color: '#64748b', fontSize: '0.85rem' }}>แสดง <span className="fw-bold text-dark">1-5</span> จาก <span className="fw-bold text-dark">50</span> รายการ</div>
-            <nav>
-                <ul className="pagination pagination-sm mb-0">
-                    <li className="page-item disabled"><a className="page-link border-0 text-secondary" href="#">Previous</a></li>
-                    <li className="page-item active"><a className="page-link border-0 rounded-3 shadow-sm bg-primary fw-bold px-3" href="#">1</a></li>
-                    <li className="page-item"><a className="page-link border-0 text-secondary px-3" href="#">2</a></li>
-                    <li className="page-item"><a className="page-link border-0 text-secondary px-3" href="#">3</a></li>
-                    <li className="page-item"><a className="page-link border-0 text-secondary" href="#">Next</a></li>
-                </ul>
-            </nav>
+
+        {/* ✅ Pagination - Restored to the original design */}
+        <div className="px-4 py-3 border-top d-flex align-items-center bg-white">
+            <button className="btn btn-light border me-2" style={{width:'36px', height:'36px'}} disabled>
+                <FontAwesomeIcon icon={faChevronDown} rotation={90} className="small text-secondary"/>
+            </button>
+            <button className="btn btn-dark border fw-bold me-2" style={{width:'36px', height:'36px', backgroundColor:'#000000', borderColor:'#000000'}}>1</button>
+            <span className="text-dark mx-2">2</span>
+            <span className="text-dark mx-2">3</span>
+            <span className="text-dark mx-2">...</span>
+            <span className="text-dark mx-2">10</span>
+            <button className="btn btn-primary ms-auto" style={{width:'36px', height:'36px', backgroundColor: '#3b82f6', borderColor:'#3b82f6'}}>
+                <FontAwesomeIcon icon={faChevronDown} rotation={270} className="small text-white"/>
+            </button>
         </div>
       </div>
 
-      {/* --- Modal Popup (Responsive) --- */}
+      {/* --- Modal Popup (New Layout, No Blue Text) --- */}
       {showModal && (
         <>
-        <div className="modal-backdrop fade show" style={{backgroundColor: 'rgba(15, 23, 42, 0.7)'}}></div>
+        <div className="modal-backdrop fade show" style={{backgroundColor: 'rgba(0, 0, 0, 0.5)'}}></div>
         <div className="modal fade show d-block" tabIndex="-1">
-          <div className="modal-dialog modal-dialog-centered modal-lg">
-            <div className="modal-content border-0 shadow-lg rounded-4" style={{ maxWidth: '800px', width: '95%' }}>
-              <div className="modal-header border-bottom-0 pb-0 pt-4 px-4">
-                <h5 className="modal-title fw-bold" style={{ color: '#1e293b' }}>เพิ่มโครงการใหม่</h5>
+          <div className="modal-dialog modal-dialog-centered modal-xl">
+            <div className="modal-content border-0 shadow-lg rounded-3">
+              
+              {/* Header */}
+              <div className="modal-header border-bottom-0 pb-0 pt-4 px-5">
+                <h3 className="modal-title fw-bold" style={{ color: '#000000' }}>สร้างโครงการ</h3>
                 <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
               </div>
-              <div className="modal-body px-4 py-3">
-                <form>
-                  <div className="row mb-3 g-3">
-                      <div className="col-12 col-md-3">
-                        <label className="form-label fw-bold small" style={{ color: '#64748b' }}>ปีงบประมาณ</label>
-                        <select className="form-select bg-light border-0 text-dark">
-                            <option>2568</option>
-                            <option>2567</option>
-                        </select>
-                      </div>
-                      <div className="col-12 col-md-9">
-                        <label className="form-label fw-bold small" style={{ color: '#64748b' }}>ชื่อโครงการ <span className="text-danger">*</span></label>
-                        <input type="text" className="form-control bg-light border-0 text-dark" placeholder="ระบุชื่อโครงการ..." />
-                      </div>
-                  </div>
-                  
-                  <div className="row mb-3 g-3">
-                    <div className="col-12 col-md-6">
-                      <label className="form-label fw-bold small" style={{ color: '#64748b' }}>รหัสโครงการ</label>
-                      <input type="text" className="form-control bg-light border-0 text-dark" placeholder="เช่น 2024-063" />
-                    </div>
-                    <div className="col-12 col-md-6">
-                      <label className="form-label fw-bold small" style={{ color: '#64748b' }}>หน่วยงานเจ้าของเรื่อง</label>
-                      <input type="text" className="form-control bg-light border-0 text-dark" placeholder="ระบุหน่วยงาน..." />
-                    </div>
-                  </div>
 
-                  <div className="mb-3">
-                    <label className="form-label fw-bold small" style={{ color: '#64748b' }}>รายละเอียดสังเขป</label>
-                    <textarea className="form-control bg-light border-0 text-dark" rows="3" placeholder="รายละเอียดโครงการ..."></textarea>
-                  </div>
+              {/* Body */}
+              <div className="modal-body px-5 py-4">
+                <form className="row g-3">
+                    
+                    {/* ชื่อโครงการ */}
+                    <div className="col-12">
+                        <label className="form-label fw-bold small" style={{ color: '#000000' }}>ชื่อโครงการ *</label>
+                        <input type="text" className="form-control" name="title" value={formData.title} onChange={handleChange} placeholder="ระบุชื่อโครงการ..." style={{height: '45px'}} />
+                    </div>
 
-                  <div className="row mb-3 g-3">
-                    <div className="col-12 col-md-6">
-                         <label className="form-label fw-bold small" style={{ color: '#64748b' }}>สถานะเริ่มต้น</label>
-                         <select className="form-select bg-light border-0 text-dark">
-                            <option>จัดทำโครงการ</option>
-                            <option>ร่าง TOR</option>
-                            <option>ยื่นซองเสนอ</option>
+                    {/* แถว 1: เลขที่โครงการ | ประเภทโครงการ */}
+                    <div className="col-md-6">
+                        <label className="form-label fw-bold small" style={{ color: '#000000' }}>เลขที่โครงการ *</label>
+                        <input type="text" className="form-control" name="contractNumber" value={formData.contractNumber} onChange={handleChange} placeholder="เช่น 2024-063" style={{height: '45px'}} />
+                    </div>
+                    <div className="col-md-6">
+                        <label className="form-label fw-bold small" style={{ color: '#000000' }}>ประเภทโครงการ *</label>
+                        <select className="form-select" name="projectTypeId" value={formData.projectTypeId} onChange={handleChange} style={{height: '45px'}}>
+                            <option value="">เลือกประเภท...</option>
+                            {projectTypes.map(type => <option key={type.id} value={type.id}>{type.name}</option>)}
                         </select>
                     </div>
-                    <div className="col-12 col-md-6">
-                         <label className="form-label fw-bold small" style={{ color: '#64748b' }}>วันที่สร้าง</label>
-                         <input type="text" className="form-control bg-light border-0 text-secondary" value={new Date().toLocaleDateString('th-TH')} disabled />
+
+                    {/* แถว 2: วิธีการจัดหา | วิธีการพิจารณา */}
+                    <div className="col-md-6">
+                        <label className="form-label fw-bold small" style={{ color: '#000000' }}>วิธีการจัดหา *</label>
+                        <select className="form-select" name="procurementMethod" value={formData.procurementMethod} onChange={handleChange} style={{height: '45px'}}>
+                            <option value="คัดเลือก">คัดเลือก</option>
+                            <option value="เฉพาะเจาะจง">เฉพาะเจาะจง</option>
+                            <option value="ประกวดราคา">ประกวดราคา</option>
+                        </select>
                     </div>
-                  </div>
+                    <div className="col-md-6">
+                        <label className="form-label fw-bold small" style={{ color: '#000000' }}>วิธีการพิจารณา *</label>
+                        <select className="form-select" name="evaluationMethod" value={formData.evaluationMethod} onChange={handleChange} style={{height: '45px'}}>
+                            <option value="ราคาต่ำสุด">ราคาต่ำสุด</option>
+                            <option value="เกณฑ์คุณภาพ">เกณฑ์คุณภาพ</option>
+                        </select>
+                    </div>
+
+                    {/* ชื่อหน่วยงาน */}
+                    <div className="col-12">
+                        <label className="form-label fw-bold small" style={{ color: '#000000' }}>ชื่อหน่วยงาน</label>
+                        <input type="text" className="form-control" name="agency" value={formData.agency} onChange={handleChange} style={{height: '45px'}} />
+                    </div>
+
+                    {/* แถว 3: ปีงบประมาณ | สถานะ */}
+                    <div className="col-md-6">
+                        <label className="form-label fw-bold small" style={{ color: '#000000' }}>ปีงบประมาณ *</label>
+                        <select className="form-select" name="fiscalYear" value={formData.fiscalYear} onChange={handleChange} style={{height: '45px'}}>
+                            <option value="2568">2568</option>
+                            <option value="2567">2567</option>
+                        </select>
+                    </div>
+                    <div className="col-md-6">
+                        <label className="form-label fw-bold small" style={{ color: '#000000' }}>สถานะ *</label>
+                        <select className="form-select" name="status" value={formData.status} onChange={handleChange} style={{height: '45px'}}>
+                            <option value="จัดทำโครงการ">จัดทำโครงการ</option>
+                            <option value="ร่างTOR">ร่าง TOR</option>
+                            <option value="ยื่นข้อเสนอ">ยื่นข้อเสนอ</option>
+                            <option value="ยื่นข้อเสนอ">ดำเนินงาน</option>
+                        </select>
+                    </div>
+
+                    {/* แถว 4: มูลค่าโครงการ | บริษัท */}
+                    <div className="col-md-6">
+                        <label className="form-label fw-bold small" style={{ color: '#000000' }}>มูลค่าโครงการ (รวม Vat) *</label>
+                        <input type="number" className="form-control" name="amount" value={formData.amount} onChange={handleChange} placeholder="0.00" style={{height: '45px'}} />
+                    </div>
+                    <div className="col-md-6">
+                        <label className="form-label fw-bold small" style={{ color: '#000000' }}>บริษัท *</label>
+                        <input type="text" className="form-control text-muted" value="Inno" disabled style={{height: '45px', backgroundColor: '#f8f9fa'}} />
+                    </div>
+
+                    {/* แถวล่าง: รายละเอียด (ซ้าย) | ผู้รับผิดชอบ (ขวา) */}
+                    <div className="col-md-7 mt-4">
+                        <label className="form-label fw-bold small" style={{ color: '#000000' }}>รายละเอียด</label>
+                        <textarea className="form-control" rows="6" name="description" placeholder="เตรียมเอกสารยื่นงาน..." value={formData.description} onChange={handleChange} style={{resize: 'none'}}></textarea>
+                        <div className="text-end text-muted small mt-1">0/300</div>
+                    </div>
+
+                    <div className="col-md-5 mt-4">
+                        <label className="form-label fw-bold small" style={{ color: '#000000' }}>ผู้รับผิดชอบ</label>
+                        
+                        {/* Dropdown + Button */}
+                        <div className="input-group mb-3">
+                            <select className="form-select" value={selectedMemberId} onChange={(e) => setSelectedMemberId(e.target.value)} style={{height: '45px'}}>
+                                <option value="">เลือกรายชื่อ...</option>
+                                {MOCK_EMPLOYEES.map(emp => (
+                                    <option key={emp.id} value={emp.id}>{emp.name} ({emp.role})</option>
+                                ))}
+                            </select>
+                            <button className="btn btn-outline-secondary" type="button" onClick={handleAddMember} style={{width: '50px'}}>
+                                <FontAwesomeIcon icon={faPlus}/>
+                            </button>
+                        </div>
+
+                        {/* List of Team Members */}
+                        <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                            {teamMembers.map((member) => (
+                                <div key={member.id} className="d-flex align-items-center justify-content-between p-2 mb-2 border rounded bg-white shadow-sm">
+                                    <div className="d-flex align-items-center">
+                                        <div className="bg-dark rounded-circle me-3 d-flex align-items-center justify-content-center text-white small" style={{width:40, height:40}}>
+                                            <FontAwesomeIcon icon={faUser}/>
+                                        </div>
+                                        <div>
+                                            <div className="fw-bold text-dark" style={{fontSize: '0.9rem'}}>{member.name}</div>
+                                            <div className="text-muted" style={{fontSize: '0.75rem'}}>{member.role}</div>
+                                        </div>
+                                    </div>
+                                    <button type="button" className="btn btn-link text-secondary p-0 me-2" onClick={() => handleRemoveMember(member.id)}>
+                                        <FontAwesomeIcon icon={faTrash}/>
+                                    </button>
+                                </div>
+                            ))}
+                            {teamMembers.length === 0 && <div className="text-center text-muted small mt-3">ยังไม่มีผู้รับผิดชอบ</div>}
+                        </div>
+                    </div>
 
                 </form>
               </div>
-              <div className="modal-footer border-top-0 px-4 pb-4">
-                <button type="button" className="btn btn-light text-secondary fw-bold" onClick={() => setShowModal(false)}>ยกเลิก</button>
-                <button type="button" className="btn btn-primary px-4 fw-bold shadow-sm" onClick={handleInitialSave}>บันทึกข้อมูล</button>
+
+              {/* Footer */}
+              <div className="modal-footer border-top-0 px-5 pb-4 pt-0">
+                 <div className="w-100 d-flex justify-content-end gap-2">
+                    <button type="button" className="btn btn-light border fw-bold px-4" onClick={() => setShowModal(false)}>ยกเลิก</button>
+                    <button type="button" className="btn btn-dark fw-bold px-4" style={{ backgroundColor: '#000000' }} onClick={handleInitialSave}>บันทึกข้อมูล</button>
+                 </div>
               </div>
+
             </div>
           </div>
         </div>
         </>
       )}
 
-      {/* --- เรียกใช้ SaveModal --- */}
-      <SaveModal 
-        isOpen={showConfirmModal} 
-        onClose={() => setShowConfirmModal(false)}
-        onConfirm={handleFinalConfirm}
-      />
-
+      <SaveModal isOpen={showConfirmModal} onClose={() => setShowConfirmModal(false)} onConfirm={handleFinalConfirm} />
     </div>
   );
 };

@@ -2,16 +2,16 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-  faFileAlt, faFileContract, faCheckCircle, faCalendarAlt 
+  faFileAlt, faFileContract, faCheckCircle, faChartLine 
 } from "@fortawesome/free-solid-svg-icons";
 
 // Import Components สำหรับกราฟ
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Title } from 'chart.js';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Title, Filler } from 'chart.js';
 import { Pie, Line } from 'react-chartjs-2';
-import './Dashboard.css'; // Import CSS ที่เราจะสร้าง
+import './Dashboard.css'; 
 
 // ลงทะเบียน ChartJS
-ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Title);
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Title, Filler);
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -21,42 +21,58 @@ function Dashboard() {
     if (!token) navigate('/'); 
   }, [navigate]);
 
-  // --- ข้อมูลกราฟวงกลม (Pie Chart) ---
+  // --- 1. กราฟวงกลม (Pie) ---
   const pieData = {
-    labels: ['เสร็จสิ้นโครงการ', 'ยังไม่ได้ดำเนินการ', 'ระหว่างดำเนินการ', 'ยกเลิกโครงการ'],
+    labels: ['เสร็จสิ้น', 'รอดำเนินการ', 'กำลังทำ', 'ยกเลิก'],
     datasets: [{
       data: [25, 25, 32, 18],
-      backgroundColor: ['#6366f1', '#3b82f6', '#0ea5e9', '#ef4444'],
+      backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'], 
+      hoverOffset: 10, 
       borderWidth: 0,
     }],
   };
 
   const pieOptions = {
     plugins: {
-      legend: { position: 'right', labels: { usePointStyle: true, boxWidth: 8, font: { family: 'Prompt', size: 12 } } }
+      legend: { position: 'right', labels: { usePointStyle: true, padding: 20, font: { family: 'Prompt', size: 12 } } },
+      tooltip: { 
+          backgroundColor: 'rgba(30, 41, 59, 0.9)', 
+          padding: 12, 
+          cornerRadius: 8,
+          bodyFont: { family: 'Prompt' }
+      }
     },
+    layout: { padding: 10 },
     maintainAspectRatio: false
   };
 
-  // --- ข้อมูลกราฟเส้น (Line Chart) ---
+  // --- 2. กราฟเส้น (Line) ---
   const lineData = {
-    labels: ['Oct 2021', 'Nov 2021', 'Dec 2021', 'Jan 2022', 'Feb 2022', 'Mar 2022'],
+    labels: ['ต.ค.', 'พ.ย.', 'ธ.ค.', 'ม.ค.', 'ก.พ.', 'มี.ค.'],
     datasets: [
       {
-        label: 'Achieved',
-        data: [2.5, 4.2, 3.8, 4.5, 3.2, 4.0],
-        borderColor: '#f97316',
-        backgroundColor: 'rgba(249, 115, 22, 0.2)',
-        tension: 0.4, // เส้นโค้ง
+        label: 'เป้าหมาย (Target)',
+        data: [2.0, 2.8, 2.2, 2.5, 3.5, 2.8],
+        borderColor: '#94a3b8', 
+        borderDash: [5, 5], 
+        borderWidth: 2,
         pointRadius: 0,
+        tension: 0.4,
+        fill: false,
       },
       {
-        label: 'Target',
-        data: [2.0, 2.8, 2.2, 2.5, 3.5, 2.8],
-        borderColor: '#6366f1',
-        backgroundColor: 'rgba(99, 102, 241, 0.2)',
-        tension: 0.4, // เส้นโค้ง
-        pointRadius: 0,
+        label: 'ผลงานจริง (Actual)',
+        data: [2.5, 4.2, 3.8, 4.5, 3.2, 4.0],
+        borderColor: '#6366f1', 
+        backgroundColor: 'rgba(99, 102, 241, 0.1)', 
+        borderWidth: 3,
+        tension: 0.4, 
+        pointBackgroundColor: '#ffffff',
+        pointBorderColor: '#6366f1',
+        pointBorderWidth: 2,
+        pointRadius: 4,
+        pointHoverRadius: 7, 
+        fill: true, 
       },
     ],
   };
@@ -65,20 +81,42 @@ function Dashboard() {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { position: 'top', align: 'start', labels: { usePointStyle: true, boxWidth: 8 } }
+      legend: { align: 'end', labels: { usePointStyle: true, boxWidth: 8 } },
+      tooltip: {
+        backgroundColor: 'rgba(30, 41, 59, 0.9)',
+        padding: 10,
+        cornerRadius: 8,
+        displayColors: false,
+        callbacks: {
+            label: function(context) {
+                return context.dataset.label + ': ' + context.parsed.y + ' ล้านบาท';
+            }
+        }
+      }
     },
     scales: {
-      y: { beginAtZero: true, grid: { color: '#f3f4f6' } },
-      x: { grid: { display: false } }
-    }
+      y: { 
+          beginAtZero: true, 
+          grid: { color: '#f1f5f9', drawBorder: false }, 
+          ticks: { font: { family: 'Prompt' }, color: '#94a3b8' }
+      },
+      x: { 
+          grid: { display: false }, 
+          ticks: { font: { family: 'Prompt' }, color: '#64748b' }
+      }
+    },
+    interaction: {
+      mode: 'index',
+      intersect: false,
+    },
   };
 
-  // --- ข้อมูล Mock รายการ ---
+  // Mock Data
   const projectsToSend = [
     { name: 'โครงการจ้างบำรุงรักษาฯ', unit: 'ส.กทม.', period: 'งวดที่ 1', date: '26/9/68' },
-    { name: 'โครงการ...', unit: 'สตช. กระทรวงพาณิชย์', period: 'งวดที่ 1', date: '26/8/68' },
-    { name: 'โครงการ...', unit: 'ศสป.', period: 'งวดที่ 1', date: '26/9/68' },
-    { name: 'โครงการ...', unit: 'อพวช.', period: 'งวดที่ 1', date: '26/9/68' },
+    { name: 'โครงการติดตั้งระบบ CCTV', unit: 'สตช.', period: 'งวดที่ 1', date: '26/8/68' },
+    { name: 'โครงการพัฒนาระบบ ERP', unit: 'ศสป.', period: 'งวดที่ 2', date: '26/9/68' },
+    { name: 'โครงการจัดซื้อคุรุภัณฑ์', unit: 'อพวช.', period: 'งวดสุดท้าย', date: '26/9/68' },
   ];
 
   return (
@@ -86,24 +124,29 @@ function Dashboard() {
       
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h4 className="fw-bold text-dark m-0">Dashboard</h4>
+        <div>
+            <h4 className="fw-bold m-0" style={{color: '#1e293b'}}>Dashboard</h4>
+            <span className="text-muted small">ระบบบริหารจัดการโครงการ</span>
+        </div>
+        <div className="bg-white px-3 py-2 rounded-3 shadow-sm d-flex align-items-center">
+            <span className="badge bg-success bg-opacity-10 text-success me-2">Online</span>
+            <small className="text-muted fw-bold">Update: Just now</small>
+        </div>
       </div>
 
       {/* --- Section 1: KPI Cards --- */}
       <div className="row g-4 mb-4">
         {/* Card 1 */}
         <div className="col-12 col-md-4">
-          <div className="card border-0 shadow-sm rounded-4 h-100 p-3">
-            <div className="card-body">
-                <h6 className="fw-bold text-dark mb-4">ยังไม่ได้ดำเนินการ</h6>
-                <div className="d-flex align-items-center">
-                    <div className="icon-box bg-blue-light text-blue me-3">
-                        <FontAwesomeIcon icon={faFileAlt} />
-                    </div>
-                    <div>
-                        <h2 className="fw-bold mb-0 text-dark">122</h2>
-                        <small className="text-muted">โครงการ</small>
-                    </div>
+          <div className="card premium-card h-100 p-3">
+            <div className="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div className="text-label mb-1">ยังไม่ได้ดำเนินการ</div>
+                    <div className="text-value">122</div>
+                    <small className="text-danger"><FontAwesomeIcon icon={faChartLine} /> +5% จากเดือนก่อน</small>
+                </div>
+                <div className="icon-box-premium bg-blue-soft">
+                    <FontAwesomeIcon icon={faFileAlt} />
                 </div>
             </div>
           </div>
@@ -111,17 +154,15 @@ function Dashboard() {
 
         {/* Card 2 */}
         <div className="col-12 col-md-4">
-          <div className="card border-0 shadow-sm rounded-4 h-100 p-3">
-            <div className="card-body">
-                <h6 className="fw-bold text-dark mb-4">อยู่ระหว่างดำเนินการ</h6>
-                <div className="d-flex align-items-center">
-                    <div className="icon-box bg-orange-light text-orange me-3">
-                        <FontAwesomeIcon icon={faFileContract} />
-                    </div>
-                    <div>
-                        <h2 className="fw-bold mb-0 text-dark">50</h2>
-                        <small className="text-muted">โครงการ</small>
-                    </div>
+          <div className="card premium-card h-100 p-3">
+            <div className="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div className="text-label mb-1">อยู่ระหว่างดำเนินการ</div>
+                    <div className="text-value">50</div>
+                    <small className="text-warning"><FontAwesomeIcon icon={faChartLine} /> คงที่</small>
+                </div>
+                <div className="icon-box-premium bg-orange-soft">
+                    <FontAwesomeIcon icon={faFileContract} />
                 </div>
             </div>
           </div>
@@ -129,52 +170,55 @@ function Dashboard() {
 
         {/* Card 3 */}
         <div className="col-12 col-md-4">
-          <div className="card border-0 shadow-sm rounded-4 h-100 p-3">
-            <div className="card-body">
-                <h6 className="fw-bold text-dark mb-4">เสร็จสิ้นโครงการ</h6>
-                <div className="d-flex align-items-center">
-                    <div className="icon-box bg-green-light text-green me-3">
-                        <FontAwesomeIcon icon={faCheckCircle} />
-                    </div>
-                    <div>
-                        <h2 className="fw-bold mb-0 text-dark">99</h2>
-                        <small className="text-muted">โครงการ</small>
-                    </div>
+          <div className="card premium-card h-100 p-3">
+            <div className="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div className="text-label mb-1">เสร็จสิ้นโครงการ</div>
+                    <div className="text-value">99</div>
+                    <small className="text-success"><FontAwesomeIcon icon={faChartLine} /> +12% ยอดเยี่ยม</small>
+                </div>
+                <div className="icon-box-premium bg-green-soft">
+                    <FontAwesomeIcon icon={faCheckCircle} />
                 </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* --- Section 2: Middle Row (Pie + List + Table) --- */}
+      {/* --- Section 2: Middle Row --- */}
       <div className="row g-4 mb-4">
-        {/* Pie Chart */}
         <div className="col-12 col-lg-4">
-            <div className="card border-0 shadow-sm rounded-4 h-100 p-3">
+            <div className="card premium-card h-100 p-3">
                 <div className="card-body">
-                    <h6 className="fw-bold text-dark mb-3">สถานะดำเนินการทั้งหมด</h6>
-                    <div style={{ height: '220px' }}>
+                    <h6 className="fw-bold mb-4" style={{color: '#334155'}}>สัดส่วนสถานะโครงการ</h6>
+                    <div style={{ height: '250px' }}>
                         <Pie data={pieData} options={pieOptions} />
                     </div>
                 </div>
             </div>
         </div>
 
-        {/* Project List */}
         <div className="col-12 col-lg-4">
-            <div className="card border-0 shadow-sm rounded-4 h-100 p-3">
+            <div className="card premium-card h-100 p-3">
                 <div className="card-body">
-                    <h6 className="fw-bold text-dark mb-3">โครงการ ที่ต้องส่ง</h6>
-                    <div className="list-group list-group-flush">
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                        <h6 className="fw-bold m-0" style={{color: '#334155'}}>โครงการที่ต้องส่งมอบเร็วๆ นี้</h6>
+                        <a href="#" className="text-decoration-none small fw-bold text-dark">ดูทั้งหมด</a>
+                    </div>
+                    <div className="mt-3">
                         {projectsToSend.map((item, idx) => (
-                            <div key={idx} className="d-flex justify-content-between align-items-start py-2 border-bottom-0 mb-2">
-                                <div>
-                                    <div className="fw-bold text-dark small">{item.name}</div>
-                                    <small className="text-muted">{item.unit}</small>
+                            <div key={idx} className="hover-list-item d-flex justify-content-between align-items-center">
+                                <div className="d-flex align-items-center">
+                                    <div className="rounded-circle bg-light d-flex align-items-center justify-content-center me-3" style={{width:'40px', height:'40px'}}>
+                                        <span className="fw-bold text-muted" style={{fontSize:'0.8rem'}}>{idx+1}</span>
+                                    </div>
+                                    <div>
+                                        <div className="fw-bold text-dark small mb-0">{item.name}</div>
+                                        <small className="text-muted" style={{fontSize:'0.75rem'}}>{item.unit}</small>
+                                    </div>
                                 </div>
                                 <div className="text-end">
-                                    <div className="fw-bold small text-dark">{item.period}</div>
-                                    <span className="badge bg-purple-light text-purple rounded-pill fw-normal">{item.date}</span>
+                                    <span className="badge bg-purple-soft text-purple fw-normal px-2 py-1 rounded-3">{item.date}</span>
                                 </div>
                             </div>
                         ))}
@@ -183,29 +227,37 @@ function Dashboard() {
             </div>
         </div>
 
-        {/* Project Count Table */}
         <div className="col-12 col-lg-4">
-            <div className="card border-0 shadow-sm rounded-4 h-100 p-3">
+            <div className="card premium-card h-100 p-3">
                 <div className="card-body">
-                    <h6 className="fw-bold text-dark mb-3">จำนวนโครงการ</h6>
+                    <h6 className="fw-bold mb-3" style={{color: '#334155'}}>สถิติรายปี</h6>
                     <div className="table-responsive">
-                        <table className="table table-borderless align-middle">
+                        <table className="table table-borderless align-middle mb-0">
                             <thead className="border-bottom">
-                                <tr className="text-muted small">
+                                <tr className="text-muted small text-uppercase">
                                     <th>ปีงบประมาณ</th>
-                                    <th className="text-end">โครงการทั้งหมด</th>
+                                    <th className="text-end">จำนวน (โครงการ)</th>
+                                    <th className="text-end">Trend</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {[
-                                    { year: '2025', count: 79 },
-                                    { year: '2024', count: 131 },
-                                    { year: '2023', count: 66 },
-                                    { year: '2022', count: 86 },
+                                    { year: '2025', count: 79, trend: 'up' },
+                                    { year: '2024', count: 131, trend: 'up' },
+                                    { year: '2023', count: 66, trend: 'down' },
+                                    { year: '2022', count: 86, trend: 'up' },
                                 ].map((row, idx) => (
-                                    <tr key={idx} className="border-bottom-dash">
-                                        <td className="text-dark fw-bold">{row.year}</td>
-                                        <td className="text-end text-muted fst-italic">{row.count}</td>
+                                    <tr key={idx} className="hover-table-row border-bottom-dash">
+                                        <td className="fw-bold text-dark py-3">{row.year}</td>
+                                        <td className="text-end py-3">
+                                            <span className="fw-bold" style={{fontSize:'1.1rem'}}>{row.count}</span>
+                                        </td>
+                                        <td className="text-end py-3">
+                                            {row.trend === 'up' ? 
+                                                <span className="text-success small"><FontAwesomeIcon icon={faChartLine}/></span> : 
+                                                <span className="text-muted small">-</span>
+                                            }
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -219,10 +271,23 @@ function Dashboard() {
       {/* --- Section 3: Performance Chart --- */}
       <div className="row g-4">
         <div className="col-12">
-            <div className="card border-0 shadow-sm rounded-4 p-3">
+            <div className="card premium-card p-3">
                 <div className="card-body">
-                    <h5 className="fw-bold text-dark mb-4">Performance</h5>
-                    <div style={{ height: '300px' }}>
+                    <div className="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h5 className="fw-bold m-0" style={{color: '#334155'}}>Performance Overview</h5>
+                            <small className="text-muted">เปรียบเทียบเป้าหมายและผลงานจริง (หน่วย: ล้านบาท)</small>
+                        </div>
+                        {/* --- แก้ไขจุดนี้: เปลี่ยนสี Dropdown ให้เป็นสีดำเข้ม --- */}
+                        <select 
+                            className="form-select w-auto border-0 fw-bold cursor-pointer" 
+                            style={{ color: '#333333', backgroundColor: '#FFFFFF' }}
+                        >
+                            <option>Last 6 Months</option>
+                            <option>Year 2025</option>
+                        </select>
+                    </div>
+                    <div style={{ height: '350px' }}>
                         <Line data={lineData} options={lineOptions} />
                     </div>
                 </div>

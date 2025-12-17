@@ -1,44 +1,121 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-  faPlus, faSearch, faEdit, faTrash, faFilter, faExclamationCircle 
+  faPlus, faSearch, faEdit, faTrash, faFilter
 } from "@fortawesome/free-solid-svg-icons";
+
+// ⚠️ ตรวจสอบ Port ให้ถูกต้อง
+const API_BASE_URL = "http://localhost:5056/api";
 
 const EquipmentTypePage = () => {
   const [showModal, setShowModal] = useState(false);
 
-  // --- State เก็บข้อมูลฟอร์ม และ Error ---
+  // --- State เก็บข้อมูลฟอร์ม ---
   const [formData, setFormData] = useState({
     name: '',
-    code: '',
     description: '',
     isActive: true
   });
-  const [error, setError] = useState(''); 
+  
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  // Mock Data (คงเดิม)
-  const [data, setData] = useState([
-    { id: 1, name: 'คอมพิวเตอร์พกพา (Laptop)', code: 'EQ-001', createdBy: 'Administrator', date: '17 เม.ย. 2025', status: true },
-    { id: 2, name: 'เซิร์ฟเวอร์ (Server)', code: 'EQ-002', createdBy: 'Administrator', date: '17 เม.ย. 2025', status: true },
-    { id: 3, name: 'เครื่องพิมพ์ (Printer)', code: 'EQ-003', createdBy: 'Administrator', date: '17 เม.ย. 2025', status: true },
-    { id: 4, name: 'อุปกรณ์สำนักงาน (Office Supplies)', code: 'EQ-004', createdBy: 'Manager', date: '18 เม.ย. 2025', status: false },
-  ]);
+  // --- 1. Fetch Data จาก API (DeviceType) ---
+  const fetchDeviceTypes = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/DeviceType`);
+      if (response.ok) {
+        const result = await response.json();
+        const mappedData = result.map(item => ({
+            id: item.id || item.Id, 
+            name: item.name,
+            description: item.description,
+            createdBy: item.createdBy || 'Admin',
+            date: item.createdDate ? new Date(item.createdDate).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }) : '-',
+            isActive: item.isActive
+        }));
+        setData(mappedData);
+      } else {
+        console.error("Failed to fetch device types");
+      }
+    } catch (err) {
+      console.error("Error connecting to API:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
+    fetchDeviceTypes();
+  }, []);
+
+  // --- 2. เปิด Modal ---
   const handleOpenModal = () => {
-    setFormData({ name: '', code: '', description: '', isActive: true });
+    setFormData({ name: '', description: '', isActive: true });
     setError('');
     setShowModal(true);
   };
 
-  const handleSave = () => {
+  // --- 3. บันทึกข้อมูล (POST) ---
+  const handleSave = async () => {
     if (!formData.name.trim()) {
-      setError('กรุณาระบุชื่ออุปกรณ์');
+      setError('กรุณาระบุชื่อประเภทอุปกรณ์');
       return; 
     }
-    console.log("บันทึกสำเร็จ:", formData);
-    alert("บันทึกข้อมูลเรียบร้อย");
-    setShowModal(false);
+
+    try {
+      const payload = {
+        name: formData.name,
+        description: formData.description,
+        isActive: formData.isActive,
+        createdBy: "Admin" 
+      };
+
+      const response = await fetch(`${API_BASE_URL}/DeviceType`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        setShowModal(false);
+        fetchDeviceTypes(); 
+      } else {
+        alert("เกิดข้อผิดพลาดในการบันทึก");
+      }
+    } catch (err) {
+      console.error("Error saving:", err);
+      alert("ไม่สามารถเชื่อมต่อ Server ได้");
+    }
   };
+
+  // --- 4. ลบข้อมูล (DELETE) ---
+  const handleDelete = async (id) => {
+    if (!window.confirm("คุณต้องการลบข้อมูลนี้ใช่หรือไม่?")) return;
+
+    // Optimistic Update
+    const previousData = [...data];
+    setData(prev => prev.filter(item => item.id !== id));
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/DeviceType/${id}`, {
+        method: 'DELETE',
+      });
+      
+      if (response.ok) {
+        console.log(`Deleted ID ${id} successfully`);
+      } else if (response.status === 404) {
+        console.warn(`ID ${id} was already deleted.`);
+      } else {
+        throw new Error("Delete failed");
+      }
+    } catch (error) {
+      console.error("Error deleting:", error);
+      alert("เกิดข้อผิดพลาดในการเชื่อมต่อ ระบบจะคืนค่าข้อมูลเดิม");
+      setData(previousData);
+    }
+  }
 
   return (
     <div className="container-fluid p-0">
@@ -46,44 +123,45 @@ const EquipmentTypePage = () => {
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h3 className="fw-bold mb-1" style={{ color: '#1e293b' }}>ประเภทอุปกรณ์</h3>
-            <span style={{ color: '#64748b', fontSize: '0.9rem' }}>จัดการข้อมูลประเภทอุปกรณ์ทั้งหมดในระบบ</span>
+            <h3 className="fw-bold mb-1" style={{ color: '#000000' }}>ประเภทอุปกรณ์</h3>
+            <span style={{ color: '#333333', fontSize: '0.9rem' }}>จัดการข้อมูลประเภทอุปกรณ์ทั้งหมดในระบบ</span>
         </div>
+        {/* 🔵 ปุ่มสีฟ้าเหมือน ProjectTypePage */}
         <button 
           className="btn btn-primary px-4 py-2 rounded-3 shadow-sm fw-bold d-flex align-items-center"
           style={{ backgroundColor: '#3b82f6', borderColor: '#3b82f6', transition: 'all 0.2s' }}
           onClick={handleOpenModal}
         >
           <FontAwesomeIcon icon={faPlus} className="me-2" /> 
-          <span className="d-none d-sm-inline">เพิ่มรายการใหม่</span> {/* ซ่อนข้อความในมือถือจอเล็กมาก */}
+          <span className="d-none d-sm-inline">เพิ่มรายการใหม่</span>
         </button>
       </div>
 
-      {/* Filter Bar - Responsive */}
+      {/* Filter Bar */}
       <div className="card border-0 shadow-sm mb-4 rounded-3 bg-white">
         <div className="card-body p-3">
             <div className="row g-3 align-items-center">
                 <div className="col-12 col-md-4">
                     <div className="position-relative">
-                        <FontAwesomeIcon icon={faSearch} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none' }} />
-                        <input type="text" className="form-control" style={{ paddingLeft: '45px', height: '45px', borderColor: '#e2e8f0', color: '#1e293b', fontSize: '0.95rem', borderRadius: '8px', backgroundColor: '#f8fafc' }} placeholder="ค้นหาชื่ออุปกรณ์ / รหัส..." />
+                        <FontAwesomeIcon icon={faSearch} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#000000', pointerEvents: 'none' }} />
+                        <input type="text" className="form-control" style={{ paddingLeft: '45px', height: '45px', borderColor: '#e2e8f0', color: '#000000', fontSize: '0.95rem', borderRadius: '8px', backgroundColor: '#f8fafc' }} placeholder="ค้นหาชื่ออุปกรณ์..." />
                     </div>
                 </div>
-                <div className="col-12 col-md-3"> {/* เต็มจอบนมือถือ */}
-                    <select className="form-select text-dark" style={{ height: '45px', borderColor: '#e2e8f0', color: '#1e293b', borderRadius: '8px', cursor:'pointer' }}>
+                <div className="col-12 col-md-3">
+                    <select className="form-select text-dark" style={{ height: '45px', borderColor: '#e2e8f0', color: '#000000', borderRadius: '8px', cursor:'pointer' }}>
                         <option>สถานะทั้งหมด</option>
                         <option>ใช้งาน</option>
                         <option>ไม่ใช้งาน</option>
                     </select>
                 </div>
-                <div className="col-12 col-md-3"> {/* เต็มจอบนมือถือ */}
-                    <select className="form-select text-dark" style={{ height: '45px', borderColor: '#e2e8f0', color: '#1e293b', borderRadius: '8px', cursor:'pointer' }}>
+                <div className="col-12 col-md-3">
+                    <select className="form-select text-dark" style={{ height: '45px', borderColor: '#e2e8f0', color: '#000000', borderRadius: '8px', cursor:'pointer' }}>
                         <option>วันที่บันทึก (ล่าสุด)</option>
                         <option>วันที่บันทึก (เก่าสุด)</option>
                     </select>
                 </div>
                 <div className="col-12 col-md-2 text-end">
-                    <button className="btn btn-light w-100 border text-dark fw-bold d-flex align-items-center justify-content-center" style={{ height: '45px', borderColor: '#e2e8f0', color: '#475569', borderRadius: '8px' }}>
+                    <button className="btn btn-light w-100 border text-dark fw-bold d-flex align-items-center justify-content-center" style={{ height: '45px', borderColor: '#e2e8f0', color: '#000000', borderRadius: '8px' }}>
                         <FontAwesomeIcon icon={faFilter} className="me-2" /> ล้างค่า
                     </button>
                 </div>
@@ -91,143 +169,189 @@ const EquipmentTypePage = () => {
         </div>
       </div>
 
-      {/* Table - Responsive */}
+      {/* Table */}
       <div className="card border-0 shadow-sm rounded-3 overflow-hidden">
-        <div className="table-responsive"> {/* สำคัญมากสำหรับมือถือ */}
+        <div className="table-responsive">
           <table className="table table-hover mb-0 align-middle">
             <thead style={{ backgroundColor: '#f1f5f9' }}>
               <tr>
                 <th className="py-3 ps-4" style={{ width: '5%' }}><input type="checkbox" className="form-check-input cursor-pointer" /></th>
-                <th className="py-3 fw-bold text-uppercase" style={{ minWidth: '200px', color: '#475569', fontSize: '0.85rem' }}>ชื่ออุปกรณ์ / รหัส</th>
-                <th className="py-3 fw-bold text-uppercase" style={{ minWidth: '120px', color: '#475569', fontSize: '0.85rem' }}>บันทึกโดย</th>
-                <th className="py-3 fw-bold text-uppercase" style={{ minWidth: '120px', color: '#475569', fontSize: '0.85rem' }}>วันที่บันทึก</th>
-                <th className="py-3 fw-bold text-uppercase text-center" style={{ minWidth: '100px', color: '#475569', fontSize: '0.85rem' }}>สถานะ</th>
-                <th className="py-3 fw-bold text-uppercase text-center" style={{ minWidth: '100px', color: '#475569', fontSize: '0.85rem' }}>จัดการ</th>
+                <th className="py-3 fw-bold text-uppercase" style={{ minWidth: '200px', color: '#000000', fontSize: '0.85rem' }}>ชื่ออุปกรณ์</th>
+                <th className="py-3 fw-bold text-uppercase" style={{ minWidth: '150px', color: '#000000', fontSize: '0.85rem' }}>บันทึกโดย</th>
+                <th className="py-3 fw-bold text-uppercase" style={{ minWidth: '120px', color: '#000000', fontSize: '0.85rem' }}>วันที่บันทึก</th>
+                <th className="py-3 fw-bold text-uppercase text-center" style={{ minWidth: '100px', color: '#000000', fontSize: '0.85rem' }}>สถานะ</th>
+                <th className="py-3 fw-bold text-uppercase text-center" style={{ minWidth: '100px', color: '#000000', fontSize: '0.85rem' }}>จัดการ</th>
               </tr>
             </thead>
             <tbody>
-              {data.map((item) => (
-                <tr key={item.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                  <td className="py-3 ps-4"><input type="checkbox" className="form-check-input cursor-pointer" /></td>
-                  <td className="py-3">
-                      <div className="d-flex flex-column">
-                          <span className="fw-bold" style={{ color: '#0f172a', fontSize: '0.95rem' }}>{item.name}</span>
-                          <span className="small text-muted" style={{ fontSize: '0.85rem', color: '#64748b' }}>{item.code}</span>
-                      </div>
-                  </td>
-                  <td className="py-3" style={{ color: '#64748b', fontSize: '0.9rem' }}>{item.createdBy}</td>
-                  <td className="py-3" style={{ color: '#64748b', fontSize: '0.9rem' }}>{item.date}</td>
-                  <td className="py-3 text-center">
-                    <span className={`badge rounded-pill px-3 py-2 fw-bold d-inline-flex align-items-center ${item.status ? 'bg-success bg-opacity-10 text-success' : 'bg-secondary bg-opacity-10 text-secondary'}`} style={{ fontSize: '0.75rem' }}>
-                      <span className={`me-1 rounded-circle ${item.status ? 'bg-success' : 'bg-secondary'}`} style={{width:'6px', height:'6px'}}></span>
-                      {item.status ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td className="py-3 text-center">
-                      <div className="btn-group">
-                        <button className="btn btn-sm btn-white border shadow-sm mx-1 rounded text-primary hover-shadow"><FontAwesomeIcon icon={faEdit} /></button>
-                        <button className="btn btn-sm btn-white border shadow-sm mx-1 rounded text-danger hover-shadow"><FontAwesomeIcon icon={faTrash} /></button>
-                      </div>
-                  </td>
-                </tr>
-              ))}
+              {loading ? (
+                 <tr><td colSpan="6" className="text-center py-5">กำลังโหลดข้อมูล...</td></tr>
+              ) : data.length === 0 ? (
+                 <tr><td colSpan="6" className="text-center py-5">ไม่พบข้อมูล</td></tr>
+              ) : (
+                data.map((item) => (
+                  <tr key={item.id} style={{ borderBottom: '1px solid #f1f5f9', transition: 'background 0.2s' }}>
+                    <td className="py-3 ps-4"><input type="checkbox" className="form-check-input cursor-pointer" /></td>
+                    
+                    <td className="py-3">
+                        <div className="fw-bold" style={{ color: '#000000', fontSize: '0.95rem' }}>{item.name}</div>
+                    </td>
+
+                    {/* 👤 Avatar วงกลม */}
+                    <td className="py-3">
+                        <div className="d-flex align-items-center">
+                            <div className="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center me-2" style={{width:'30px', height:'30px', fontSize:'0.75rem'}}>
+                                {item.createdBy ? item.createdBy.charAt(0).toUpperCase() : 'A'}
+                            </div>
+                            <span style={{ color: '#000000', fontSize: '0.9rem' }}>{item.createdBy}</span>
+                        </div>
+                    </td>
+
+                    <td className="py-3" style={{ color: '#000000', fontSize: '0.9rem' }}>{item.date}</td>
+                    
+                    {/* Status Colors */}
+                    <td className="py-3 text-center">
+                      {item.isActive ? (
+                        <span className="badge rounded-pill fw-medium border-0" style={{ backgroundColor: '#ecfdf5', color: '#047857', fontSize: '0.75rem', padding: '8px 16px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{width:'8px', height:'8px', backgroundColor:'#047857', borderRadius:'50%', display:'inline-block'}}></span>
+                            Active
+                        </span>
+                      ) : (
+                        <span className="badge rounded-pill fw-medium border-0" style={{ backgroundColor: '#fee2e2', color: '#991b1b', fontSize: '0.75rem', padding: '8px 16px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{width:'8px', height:'8px', backgroundColor:'#991b1b', borderRadius:'50%', display:'inline-block'}}></span>
+                            Inactive
+                        </span>
+                      )}
+                    </td>
+
+                    <td className="py-3 text-center">
+                        <div className="btn-group">
+                          <button className="btn btn-sm btn-white border shadow-sm mx-1 rounded text-dark hover-shadow"><FontAwesomeIcon icon={faEdit} /></button>
+                          <button 
+                            className="btn btn-sm btn-white border shadow-sm mx-1 rounded text-danger hover-shadow" 
+                            onClick={() => handleDelete(item.id)}
+                          >
+                              <FontAwesomeIcon icon={faTrash} />
+                          </button>
+                        </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
+        
         {/* Footer */}
         <div className="card-footer bg-white py-3 border-0 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
-            <div style={{ color: '#64748b', fontSize: '0.85rem' }}>แสดง 1 ถึง 4 จาก 4 รายการ</div>
+            <div style={{ color: '#000000', fontSize: '0.85rem' }}>แสดง {data.length} รายการ</div>
             <nav>
                 <ul className="pagination pagination-sm mb-0">
-                    <li className="page-item disabled"><a className="page-link border-0 text-secondary" href="#">Previous</a></li>
-                    <li className="page-item active"><a className="page-link border-0 rounded-3 shadow-sm bg-primary fw-bold px-3" href="#">1</a></li>
-                    <li className="page-item"><a className="page-link border-0 text-secondary px-3" href="#">2</a></li>
-                    <li className="page-item"><a className="page-link border-0 text-secondary" href="#">Next</a></li>
+                    <li className="page-item disabled"><a className="page-link border-0" href="#" style={{ color: '#000000' }}>Previous</a></li>
+                    <li className="page-item active"><a className="page-link border-0 rounded-3 shadow-sm px-3 fw-bold" href="#" style={{ backgroundColor: '#000000', color: '#fff' }}>1</a></li>
+                    <li className="page-item disabled"><a className="page-link border-0" href="#" style={{ color: '#000000' }}>Next</a></li>
                 </ul>
             </nav>
         </div>
       </div>
 
-      {/* Modal Popup - Responsive */}
+      {/* --- Modal Popup (ดีไซน์เหมือน ProjectTypePage) --- */}
       {showModal && (
         <>
-        <div className="modal-backdrop fade show" style={{backgroundColor: 'rgba(15, 23, 42, 0.7)'}}></div>
+        <div className="modal-backdrop fade show" style={{backgroundColor: 'rgba(0, 0, 0, 0.5)'}}></div>
         <div className="modal fade show d-block" tabIndex="-1">
-          <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-dialog modal-dialog-centered modal-lg" style={{maxWidth: '700px'}}>
             <div className="modal-content border-0 shadow-lg rounded-4">
-              <div className="modal-header border-bottom-0 pb-0 pt-4 px-4">
-                <h5 className="modal-title fw-bold" style={{ color: '#1e293b' }}>เพิ่มประเภทอุปกรณ์ใหม่</h5>
+              
+              {/* Header */}
+              <div className="modal-header border-bottom-0 pb-0 pt-4 px-5">
+                <h4 className="modal-title fw-bold" style={{ color: '#000000' }}>เพิ่มประเภทอุปกรณ์</h4>
                 <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
               </div>
-              <div className="modal-body px-4 py-3">
-                <form>
-                  <div className="mb-3">
-                    <label className="form-label fw-bold small" style={{ color: '#64748b' }}>ชื่ออุปกรณ์ <span className="text-danger">*</span></label>
-                    <div className="position-relative">
-                        <input 
-                            type="text" 
-                            className={`form-control form-control-lg bg-light border-0 text-dark ${error ? 'is-invalid text-danger' : ''}`} 
-                            placeholder="เช่น คอมพิวเตอร์, ปริ้นเตอร์..." 
-                            value={formData.name}
-                            onChange={(e) => {
-                                setFormData({...formData, name: e.target.value});
-                                if(error) setError('');
-                            }}
-                            style={{ paddingRight: '40px' }}
-                        />
-                        {error && (
-                            <FontAwesomeIcon 
-                                icon={faExclamationCircle} 
-                                className="text-danger position-absolute"
-                                style={{ right: '15px', top: '50%', transform: 'translateY(-50%)', fontSize: '1.2rem' }}
-                            />
-                        )}
-                    </div>
-                    {error && <div className="text-danger small mt-1 text-start fw-bold">{error}</div>}
-                  </div>
 
-                  <div className="row mb-3 g-3">
-                    <div className="col-12 col-md-6"> {/* เต็มจอบนมือถือ */}
-                      <label className="form-label fw-bold small" style={{ color: '#64748b' }}>รหัส (Code)</label>
+              {/* Body */}
+              <div className="modal-body px-5 py-4">
+                <form>
+                  <div className="mb-4">
+                    <label className="form-label fw-bold small" style={{ color: '#000000' }}>ชื่ออุปกรณ์</label>
+                    <input 
+                        type="text" 
+                        className={`form-control form-control-lg fs-6 text-dark ${error ? 'is-invalid' : ''}`}
+                        placeholder="เช่น PC, Laptop, Printer..." 
+                        value={formData.name}
+                        onChange={(e) => {
+                            setFormData({...formData, name: e.target.value});
+                            if(error) setError('');
+                        }}
+                        style={{ borderRadius: '8px', padding: '12px 15px', borderColor: '#e2e8f0' }}
+                    />
+                    {error && <div className="text-danger small mt-1">{error}</div>}
+                  </div>
+                  
+                  <div className="row mb-4">
+                    <div className="col-md-6">
+                      <label className="form-label fw-bold small" style={{ color: '#000000' }}>วันที่บันทึก</label>
                       <input 
                         type="text" 
-                        className="form-control bg-light border-0 text-dark" 
-                        placeholder="เช่น EQ-001" 
-                        value={formData.code}
-                        onChange={(e) => setFormData({...formData, code: e.target.value})}
+                        className="form-control" 
+                        value={new Date().toLocaleDateString('en-GB')} 
+                        disabled 
+                        style={{ borderRadius: '8px', backgroundColor: '#f8fafc', color: '#000000', borderColor: '#e2e8f0' }} 
                       />
                     </div>
-                    <div className="col-12 col-md-6"> {/* เต็มจอบนมือถือ */}
-                      <label className="form-label fw-bold small" style={{ color: '#64748b' }}>วันที่บันทึก</label>
-                      <input type="text" className="form-control bg-light border-0 text-secondary" value={new Date().toLocaleDateString('th-TH')} disabled />
+                    <div className="col-md-6">
+                      <label className="form-label fw-bold small" style={{ color: '#000000' }}>บันทึกโดย</label>
+                      <input 
+                        type="text" 
+                        className="form-control" 
+                        value="Admin" 
+                        disabled 
+                        style={{ borderRadius: '8px', backgroundColor: '#f8fafc', color: '#000000', borderColor: '#e2e8f0' }} 
+                      />
                     </div>
                   </div>
-                  <div className="mb-3">
-                    <label className="form-label fw-bold small" style={{ color: '#64748b' }}>รายละเอียดเพิ่มเติม</label>
+                  
+                  <div className="mb-4">
+                    <label className="form-label fw-bold small" style={{ color: '#000000' }}>รายละเอียด</label>
                     <textarea 
-                        className="form-control bg-light border-0 text-dark" 
-                        rows="3" 
-                        placeholder="ระบุรายละเอียด..."
+                        className="form-control text-dark" 
+                        rows="3"
                         value={formData.description}
                         onChange={(e) => setFormData({...formData, description: e.target.value})}
+                        style={{ borderRadius: '8px', borderColor: '#e2e8f0' }}
                     ></textarea>
                   </div>
-                  <div className="form-check form-switch">
+                  
+                  <div className="form-check">
                     <input 
                         className="form-check-input" 
                         type="checkbox" 
-                        id="flexSwitchCheckChecked" 
+                        id="activeCheck" 
                         checked={formData.isActive}
                         onChange={(e) => setFormData({...formData, isActive: e.target.checked})}
+                        style={{ cursor: 'pointer', borderColor: '#000000' }}
                     />
-                    <label className="form-check-label small text-dark" htmlFor="flexSwitchCheckChecked">เปิดใช้งานทันที</label>
+                    <label className="form-check-label small fw-bold" htmlFor="activeCheck" style={{ cursor: 'pointer', color: '#000000' }}>
+                        เปิดใช้งาน
+                    </label>
                   </div>
                 </form>
               </div>
-              <div className="modal-footer border-top-0 px-4 pb-4">
-                <button type="button" className="btn btn-light text-secondary fw-bold" onClick={() => setShowModal(false)}>ยกเลิก</button>
-                <button type="button" className="btn btn-primary px-4 fw-bold shadow-sm" onClick={handleSave}>บันทึกข้อมูล</button>
+
+              {/* Footer */}
+              <div className="modal-footer border-top-0 px-5 pb-4 pt-0">
+                 <div className="w-100 d-flex justify-content-end">
+                    <button 
+                        type="button" 
+                        className="btn btn-dark fw-bold px-4 rounded-3" 
+                        style={{ backgroundColor: '#000000', borderColor: '#000000', padding: '10px 24px' }}
+                        onClick={handleSave}
+                    >
+                        บันทึก
+                    </button>
+                 </div>
               </div>
+
             </div>
           </div>
         </div>

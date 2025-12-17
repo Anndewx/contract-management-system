@@ -1,44 +1,121 @@
-/* Dashboard Background */
+/* Dashboard.css - Premium & Modern Style */
+
+/* --- 1. Global Background --- */
 .dashboard-bg {
-    background-color: #f8fafc; /* สีพื้นหลังเทาอ่อนมากๆ สบายตา */
+    background-color: #f1f5f9; /* สีพื้นหลังเทาอ่อน สบายตา (Slate-100) */
     min-height: 100vh;
+    font-family: 'Prompt', sans-serif; /* บังคับใช้ฟอนต์ Prompt */
+    padding-bottom: 50px;
 }
 
-/* Custom Colors Palette */
-.text-blue { color: #3b82f6 !important; }
-.bg-blue-light { background-color: #dbeafe !important; }
+/* --- 2. Premium Card (หัวใจสำคัญ) --- */
+.premium-card {
+    background: #ffffff;
+    border: none !important;
+    border-radius: 20px !important; /* มุมโค้งมน 20px */
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.03), 0 4px 6px -2px rgba(0, 0, 0, 0.02); /* เงาเริ่มต้นจางๆ */
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Animation แบบเด้งนิดๆ */
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+}
 
-.text-orange { color: #f97316 !important; }
-.bg-orange-light { background-color: #ffedd5 !important; }
+/* เอฟเฟกต์ตอนเอาเมาส์ชี้การ์ด (Hover) */
+.premium-card:hover {
+    transform: translateY(-8px); /* ลอยขึ้นมาชัดเจน */
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); /* เงาเข้มขึ้น */
+    border-bottom: 4px solid #3b82f6; /* เพิ่มเส้นสีฟ้าด้านล่าง */
+}
 
-.text-green { color: #10b981 !important; }
-.bg-green-light { background-color: #d1fae5 !important; }
-
-.text-purple { color: #8b5cf6 !important; }
-.bg-purple-light { background-color: #ede9fe !important; }
-
-/* Icon Boxes */
-.icon-box {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%; /* วงกลม */
+/* --- 3. Icon Box (กล่องไอคอน) --- */
+.icon-box-premium {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px; /* สี่เหลี่ยมมุมมน */
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
+    font-size: 1.75rem;
+    transition: transform 0.3s ease;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); /* เส้นขอบด้านในจางๆ */
 }
 
-/* Table Styling */
+/* ไอคอนหมุนนิดๆ เมื่อชี้การ์ด */
+.premium-card:hover .icon-box-premium {
+    transform: rotate(10deg) scale(1.1);
+}
+
+/* สีพื้นหลังไอคอนแบบ Soft (พาสเทลเข้ม) */
+.bg-blue-soft { background-color: #eff6ff; color: #3b82f6; }   /* ฟ้า */
+.bg-orange-soft { background-color: #fff7ed; color: #f97316; } /* ส้ม */
+.bg-green-soft { background-color: #f0fdf4; color: #10b981; }  /* เขียว */
+.bg-purple-soft { background-color: #eef2ff; color: #6366f1; } /* ม่วง */
+
+/* --- 4. Text & Typography --- */
+.text-label {
+    font-size: 0.9rem;
+    color: #64748b; /* Slate-500 */
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+.text-value {
+    font-size: 2.2rem;
+    font-weight: 800; /* ตัวหนาพิเศษ */
+    color: #1e293b; /* Slate-800 */
+    letter-spacing: -1px;
+    line-height: 1.2;
+}
+
+/* --- 5. Lists & Tables (Interactive) --- */
+
+/* รายการ (List) */
+.hover-list-item {
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 8px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.hover-list-item:hover {
+    background-color: #f8fafc;
+    border-color: #e2e8f0;
+    transform: translateX(5px); /* ขยับไปขวานิดนึง */
+    cursor: pointer;
+}
+
+/* ตาราง (Table) */
+.hover-table-row {
+    transition: all 0.2s ease;
+}
+
+.hover-table-row:hover {
+    background-color: #f8fafc;
+    transform: scale(1.02); /* ขยายแถวเล็กน้อย */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    position: relative;
+    z-index: 10;
+}
+
+/* เส้นประในตาราง */
 .border-bottom-dash {
-    border-bottom: 1px dashed #e5e7eb !important;
+    border-bottom: 1px dashed #e2e8f0 !important;
 }
 
-/* Scrollbar customization (Optional) */
+/* --- 6. Scrollbar Customization --- */
 ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #f1f5f9; 
 }
 ::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 3px;
+    background: #cbd5e1; 
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8; 
 }
