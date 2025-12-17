@@ -4,6 +4,7 @@ using Contractmanagement.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ContractAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251216050600_AddContractTable")]
+    partial class AddContractTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,68 +24,6 @@ namespace ContractAPI.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
-
-            modelBuilder.Entity("Contractmanagement.API.Models.Contract", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.Property<string>("ContractNumber")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<int?>("DeviceTypeId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("EndDate")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<int>("ProjectTypeId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("longtext");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("datetime(6)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DeviceTypeId");
-
-                    b.HasIndex("ProjectTypeId");
-
-                    b.ToTable("Contracts");
-                });
 
             modelBuilder.Entity("Contractmanagement.API.Models.Menu", b =>
                 {
@@ -184,7 +125,7 @@ namespace ContractAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Tbl_DeviceType", (string)null);
+                    b.ToTable("Tbl_DeviceType");
                 });
 
             modelBuilder.Entity("Contractmanagement.API.Models.TblProjectType", b =>
@@ -213,7 +154,7 @@ namespace ContractAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Tbl_ProjectType", (string)null);
+                    b.ToTable("Tbl_ProjectTypes");
                 });
 
             modelBuilder.Entity("Contractmanagement.API.Models.User", b =>
@@ -261,23 +202,6 @@ namespace ContractAPI.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("Contractmanagement.API.Models.Contract", b =>
-                {
-                    b.HasOne("Contractmanagement.API.Models.TblDeviceType", "DeviceType")
-                        .WithMany()
-                        .HasForeignKey("DeviceTypeId");
-
-                    b.HasOne("Contractmanagement.API.Models.TblProjectType", "ProjectType")
-                        .WithMany()
-                        .HasForeignKey("ProjectTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("DeviceType");
-
-                    b.Navigation("ProjectType");
                 });
 
             modelBuilder.Entity("Contractmanagement.API.Models.RoleMenu", b =>

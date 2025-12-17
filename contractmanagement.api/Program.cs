@@ -4,9 +4,18 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using Contractmanagement.API.Data; // ✅ ตรวจสอบว่า namespace ตรงกับไฟล์ ApplicationDbContext.cs
-
+using System.Text.Json.Serialization;
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        policy =>
+        {
+            policy.AllowAnyOrigin()   // อนุญาตทุกเว็บ (รวมถึง localhost ของคุณ)
+                  .AllowAnyMethod()   // อนุญาตทุกท่า (GET, POST, PUT, DELETE)
+                  .AllowAnyHeader();  // อนุญาตทุก Header
+        });
+});
 // --- 1. เชื่อมต่อ Database (ใช้ชื่อ ApplicationDbContext) ---
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -35,7 +44,8 @@ builder.Services.AddAuthentication(options =>
 });
 
 // --- 3. ตั้งค่า Swagger (ให้มีปุ่มแม่กุญแจ) ---
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(x =>
+    x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {

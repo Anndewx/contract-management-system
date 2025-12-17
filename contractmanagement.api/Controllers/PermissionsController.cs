@@ -22,11 +22,13 @@ namespace Contractmanagement.API.Controllers
         public async Task<ActionResult<IEnumerable<Menu>>> GetMenusByRole(int roleId)
         {
             // ดึงเฉพาะเมนูที่มีในตาราง RoleMenu ตรงกับ roleId ที่ส่งมา
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
             var menus = await _context.RoleMenus
                 .Where(rm => rm.RoleId == roleId)
                 .Select(rm => rm.Menu) // เลือกเอาเฉพาะข้อมูล Menu ออกมา
                 .OrderBy(m => m.Order)
                 .ToListAsync();
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
 
             return Ok(menus);
         }

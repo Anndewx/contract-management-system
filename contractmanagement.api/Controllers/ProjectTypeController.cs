@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Contractmanagement.API.Data;
-// แก้ไขบรรทัดนี้ให้เป็นตัวพิมพ์ใหญ่ (Contractmanagement...) ให้ตรงกับไฟล์ Model
 using Contractmanagement.API.Models; 
 
 namespace Contractmanagement.API.Controllers
@@ -20,7 +19,6 @@ namespace Contractmanagement.API.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            // ถ้าแก้ไฟล์ DbContext แล้ว Error ตรงนี้จะหายไปครับ
             var data = _context.Tbl_ProjectTypes.ToList(); 
             return Ok(data);
         }
@@ -32,6 +30,26 @@ namespace Contractmanagement.API.Controllers
             _context.Tbl_ProjectTypes.Add(model);
             _context.SaveChanges();
             return Ok(new { message = "บันทึกสำเร็จ" });
+        }
+
+        // 3. ลบข้อมูล (DELETE) --- [ส่วนที่ผมเพิ่มให้ครับ]
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            // ค้นหาข้อมูลตาม ID
+            var item = _context.Tbl_ProjectTypes.Find(id);
+            
+            // ถ้าไม่เจอ ให้แจ้งกลับว่า NotFound (404)
+            if (item == null)
+            {
+                return NotFound();
+            }
+
+            // ถ้าเจอ ให้สั่งลบและบันทึก
+            _context.Tbl_ProjectTypes.Remove(item);
+            _context.SaveChanges();
+            
+            return Ok(new { message = "ลบข้อมูลสำเร็จ" });
         }
     }
 }

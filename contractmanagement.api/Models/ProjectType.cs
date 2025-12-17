@@ -1,9 +1,10 @@
 using System;
 using System.ComponentModel.DataAnnotations; // เผื่อใช้
-
+using System.ComponentModel.DataAnnotations.Schema;
 // สังเกตตัวพิมพ์ใหญ่-เล็ก ต้องตรงกับโปรเจกต์คุณ
 namespace Contractmanagement.API.Models 
 {
+    [Table("Tbl_ProjectType")]
     public class TblProjectType
     {
         [Key]

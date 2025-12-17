@@ -1,5 +1,7 @@
 C:\Users\INNO-Dev4\Desktop\contractmanagement\contractmanagement.api\bin\Debug\net9.0\appsettings.Development.json
 C:\Users\INNO-Dev4\Desktop\contractmanagement\contractmanagement.api\bin\Debug\net9.0\appsettings.json
+C:\Users\INNO-Dev4\Desktop\contractmanagement\contractmanagement.api\bin\Debug\net9.0\package-lock.json
+C:\Users\INNO-Dev4\Desktop\contractmanagement\contractmanagement.api\bin\Debug\net9.0\package.json
 C:\Users\INNO-Dev4\Desktop\contractmanagement\contractmanagement.api\bin\Debug\net9.0\ContractAPI.staticwebassets.endpoints.json
 C:\Users\INNO-Dev4\Desktop\contractmanagement\contractmanagement.api\bin\Debug\net9.0\ContractAPI.exe
 C:\Users\INNO-Dev4\Desktop\contractmanagement\contractmanagement.api\bin\Debug\net9.0\ContractAPI.deps.json
@@ -113,6 +115,3 @@ C:\Users\INNO-Dev4\Desktop\contractmanagement\contractmanagement.api\obj\Debug\n
 C:\Users\INNO-Dev4\Desktop\contractmanagement\contractmanagement.api\obj\Debug\net9.0\ContractAPI.pdb
 C:\Users\INNO-Dev4\Desktop\contractmanagement\contractmanagement.api\obj\Debug\net9.0\ContractAPI.genruntimeconfig.cache
 C:\Users\INNO-Dev4\Desktop\contractmanagement\contractmanagement.api\obj\Debug\net9.0\ref\ContractAPI.dll
-C:\Users\INNO-Dev4\Desktop\contractmanagement\contractmanagement.api\bin\Debug\net9.0\package-lock.json
-C:\Users\INNO-Dev4\Desktop\contractmanagement\contractmanagement.api\bin\Debug\net9.0\package.json
-C:\Users\INNO-Dev4\Desktop\contractmanagement\contractmanagement.api\obj\Debug\net9.0\ContractAPI.sourcelink.json
