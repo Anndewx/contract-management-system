@@ -198,15 +198,12 @@ const ProjectTypePage = () => {
                         <div className="fw-bold" style={{ color: '#000000', fontSize: '0.95rem' }}>{item.name}</div>
                     </td>
 
-                    {/* 👤 ปรับคอลัมน์บันทึกโดย ให้มี Avatar วงกลม */}
+                    {/* 👤 เหลือเฉพาะชื่อผู้บันทึก */}
                     <td className="py-3">
-                        <div className="d-flex align-items-center">
-                            <div className="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center me-2" style={{width:'30px', height:'30px', fontSize:'0.75rem'}}>
-                                {item.createdBy ? item.createdBy.charAt(0).toUpperCase() : 'A'}
-                            </div>
-                            <span style={{ color: '#000000', fontSize: '0.9rem' }}>{item.createdBy}</span>
-                        </div>
-                    </td>
+                    <div className="d-flex align-items-center">
+                    <span style={{ color: '#000000', fontSize: '0.9rem' }}>{item.createdBy}</span>
+                    </div>
+                  </td>
 
                     <td className="py-3" style={{ color: '#000000', fontSize: '0.9rem' }}>{item.date}</td>
                     
@@ -214,12 +211,12 @@ const ProjectTypePage = () => {
                       {item.isActive ? (
                         <span className="badge rounded-pill fw-medium border-0" style={{ backgroundColor: '#ecfdf5', color: '#047857', fontSize: '0.75rem', padding: '8px 16px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                             <span style={{width:'8px', height:'8px', backgroundColor:'#047857', borderRadius:'50%', display:'inline-block'}}></span>
-                            Active
+                            เปิดใช้งาน
                         </span>
                       ) : (
                         <span className="badge rounded-pill fw-medium border-0" style={{ backgroundColor: '#fee2e2', color: '#991b1b', fontSize: '0.75rem', padding: '8px 16px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                             <span style={{width:'8px', height:'8px', backgroundColor:'#991b1b', borderRadius:'50%', display:'inline-block'}}></span>
-                            Inactive
+                            ปิดใช้งาน
                         </span>
                       )}
                     </td>

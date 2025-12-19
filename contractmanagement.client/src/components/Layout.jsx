@@ -4,13 +4,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faBorderAll, faProjectDiagram, faFileContract, faUserTie, 
   faFolder, faCalendarAlt, faUsers, faCog, faSignOutAlt, 
-  faBars, faChevronDown, faLayerGroup,
-  faSearch
+  faBars, faChevronDown, faLayerGroup
 } from "@fortawesome/free-solid-svg-icons";
 
 import "bootstrap/dist/js/bootstrap.bundle.min"; 
 
-// --- 1. NavItem ไม่ต้องรับ onClick เพื่อปิด Sidebar แล้ว ---
+// --- 1. NavItem Component ---
 const NavItem = ({ title, link, icon }) => {
   const location = useLocation();
   const isActive = location.pathname === link;
@@ -27,14 +26,13 @@ const NavItem = ({ title, link, icon }) => {
   );
 };
 
-// --- 2. CollapsableNavItem ---
+// --- 2. CollapsableNavItem Component ---
 const CollapsableNavItem = ({ title, icon, children }) => {
   const location = useLocation();
   const isChildActive = React.Children.toArray(children).some(child => 
     child.props && child.props.to === location.pathname
   );
   
-  // ให้เมนูย่อยเปิดค้างไว้ถ้าเราอยู่ในหน้านั้น หรือกดเปิดเอง
   const [isOpen, setIsOpen] = useState(isChildActive);
 
   useEffect(() => { if (isChildActive) setIsOpen(true); }, [location.pathname]);
@@ -70,14 +68,11 @@ const CollapsableNavItem = ({ title, icon, children }) => {
   );
 };
 
+// --- 3. Main Layout Component ---
 const Layout = ({ children }) => {
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  
-  // State: Sidebar เปิด/ปิด (Default เป็น True คือเปิดอยู่)
   const [isSidebarOpen, setSidebarOpen] = useState(true);
-  
-  // --- ส่วนจัดการข้อมูล User ---
   const [username, setUsername] = useState('Guest');
   const [userRole, setUserRole] = useState('ผู้ใช้งานทั่วไป');
 
@@ -138,7 +133,6 @@ const Layout = ({ children }) => {
         <div className="sidebar-content flex-grow-1 overflow-auto px-2 pb-4 custom-scrollbar">
           <small className="text-uppercase fw-bold text-muted mb-2 d-block px-3 mt-3" style={{fontSize: '0.7rem', letterSpacing: '1px'}}></small>
           
-          {/* เอา onClick ออก เพื่อไม่ให้ Sidebar หุบเอง */}
           <NavItem title="Dashboard" link="/dashboard" icon={faBorderAll} />
           <NavItem title="โครงการ" link="/projects" icon={faProjectDiagram} />
           <NavItem title="สัญญาโครงการ" link="/contracts" icon={faFileContract} />
@@ -151,9 +145,7 @@ const Layout = ({ children }) => {
          {isAdmin && (
             <>
               <small className="text-uppercase fw-bold text-muted mb-2 d-block px-3" style={{fontSize: '0.7rem', letterSpacing: '1px'}}>Admin Tools</small>
-              
               <NavItem title="Users" link="/users" icon={faUsers} />
-
               <CollapsableNavItem title="Settings" icon={faCog}>
                   <Link className="nav-link text-white-50" to="/settings/project-type" style={{fontSize:'0.9rem', paddingLeft: '3rem'}}>ประเภทโครงการ</Link>
                   <Link className="nav-link text-white-50" to="/settings/expense-type" style={{fontSize:'0.9rem', paddingLeft: '3rem'}}>ประเภทการเบิกจ่าย</Link>
@@ -164,14 +156,14 @@ const Layout = ({ children }) => {
         </div>
       </aside>
 
-      {/* ----------------- 2. MAIN WRAPPER ----------------- */}
+      {/* ----------------- 2. MAIN CONTENT ----------------- */}
       <div className="flex-grow-1 d-flex flex-column" style={{ minWidth: 0, transition: 'margin-left 0.4s ease' }}>
         
-        {/* Topbar */}
+        {/* ✅ Topbar: ใช้ justify-content-between เพื่อดันซ้าย-ขวาออกจากกัน */}
         <header className="topbar d-flex justify-content-between align-items-center bg-white px-4 py-3 border-bottom shadow-sm" style={{ height: '80px', zIndex: 100 }}>
             
+            {/* ⬅️ ฝั่งซ้าย: ปุ่มเมนู Hamburger (ลบปฏิทินออกแล้ว) */}
             <div className="d-flex align-items-center gap-3">
-                {/* ปุ่ม Hamburger (ยังคงทำหน้าที่เปิด/ปิด Sidebar ได้เหมือนเดิม) */}
                 <button 
                     className="btn border-0 shadow-sm rounded-circle d-flex align-items-center justify-content-center" 
                     onClick={() => setSidebarOpen(!isSidebarOpen)}
@@ -193,25 +185,10 @@ const Layout = ({ children }) => {
                 >
                     <FontAwesomeIcon icon={faBars} style={{ fontSize: '1.2rem' }} />
                 </button>
-
-                <div className="d-none d-md-flex align-items-center bg-white border rounded px-3 py-2" style={{ gap: '10px', cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-                    <FontAwesomeIcon icon={faCalendarAlt} style={{ color: '#6b7280' }} />
-                    <span className="fw-bold text-dark" style={{ fontSize: '14px' }}>2568</span>
-                    <FontAwesomeIcon icon={faChevronDown} style={{ fontSize: '10px', color: '#9ca3af' }} />
-                </div>
             </div>
 
-            <div className="d-flex align-items-center gap-4">
-                <div className="d-none d-md-flex align-items-center px-3 py-2 rounded bg-light" style={{ width: '300px' }}>
-                    <FontAwesomeIcon icon={faSearch} style={{ color: '#9ca3af', marginRight: '10px' }} />
-                    <input 
-                        type="text" 
-                        placeholder="ค้นหา..." 
-                        className="bg-transparent border-0 w-100 text-dark"
-                        style={{ outline: 'none', fontSize: '14px' }}
-                    />
-                </div>
-
+            {/* ➡️ ฝั่งขวา: โปรไฟล์ (ลบช่องค้นหาออกแล้ว) */}
+            <div className="d-flex align-items-center"> 
                 <div className="dropdown">
                     <div className="d-flex align-items-center" role="button" data-bs-toggle="dropdown" style={{cursor: 'pointer'}}>
                         <div className="me-3 text-end d-none d-md-block">
@@ -288,7 +265,6 @@ const Layout = ({ children }) => {
             display: inline-block;
             text-align: center;
         }
-        /* Custom Scrollbar for sidebar */
         .custom-scrollbar::-webkit-scrollbar {
             width: 4px;
         }

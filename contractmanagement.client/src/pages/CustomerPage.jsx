@@ -7,19 +7,6 @@ import {
 
 // Custom CSS styles
 const customStyles = `
-  /* Green Toggle Switch Style */
-  .form-check-input.custom-green-switch:checked {
-    background-color: #10b981 !important; /* Emerald Green */
-    border-color: #10b981 !important;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
-  }
-
-  .form-check-input.custom-green-switch {
-    height: 24px;
-    width: 48px;
-    cursor: pointer;
-  }
-
   /* Hover Effects */
   .hover-shadow:hover {
     box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
@@ -122,8 +109,11 @@ const CustomerPage = () => {
     setShowModal(false);
   };
 
-  const toggleStatus = (id) => {
-    setData(data.map(item => item.id === id ? {...item, status: !item.status} : item));
+  // ✅ เปลี่ยนจาก toggleStatus เป็น handleDelete
+  const handleDelete = (id) => {
+    if(window.confirm("คุณต้องการลบข้อมูลลูกค้ารายนี้ใช่หรือไม่?")) {
+        setData(data.filter(item => item.id !== id));
+    }
   };
 
   // Helper function for Sidebar Button
@@ -149,9 +139,13 @@ const CustomerPage = () => {
                 <h4 className="fw-bold mb-1 text-black">ข้อมูลและประวัติลูกค้า Customer Management</h4>
                 <span className="text-black" style={{ fontSize: '0.9rem' }}>จัดการรายชื่อลูกค้าและหน่วยงานคู่ค้า</span>
             </div>
-            <button className="btn btn-dark px-4 py-2 rounded-3 shadow-sm fw-bold d-flex align-items-center" onClick={handleOpenModal}>
-              <FontAwesomeIcon icon={faPlus} className="me-2" /> เพิ่มลูกค้าใหม่
-            </button>
+            <button 
+            className="btn btn-primary px-4 py-2 rounded-3 shadow-sm fw-bold d-flex align-items-center" 
+            style={{ backgroundColor: '#3b82f6', borderColor: '#3b82f6' }} /* <-- ใส่สีฟ้าตรงนี้ */
+            onClick={handleOpenModal}
+>
+        <FontAwesomeIcon icon={faPlus} className="me-2" /> เพิ่มลูกค้าใหม่
+        </button>
         </div>
       </div>
 
@@ -177,22 +171,26 @@ const CustomerPage = () => {
                   <td className="py-4 small text-black text-truncate" style={{maxWidth: '200px'}}>{item.address}</td>
                   <td className="py-4 small text-black">{item.email}</td>
                   <td className="py-4 small text-black">{item.phone}</td>
+                  
+                  {/* ✅ ส่วนจัดการ: แก้ไขเป็นปุ่ม Edit คู่กับ Delete */}
                   <td className="py-4 text-center">
-                      <div className="d-flex justify-content-center align-items-center gap-3">
+                      <div className="d-flex justify-content-center align-items-center gap-2">
+                        {/* ปุ่มแก้ไข */}
                         <button className="btn btn-white border shadow-sm rounded hover-shadow d-flex align-items-center justify-content-center" style={{width:'36px', height:'36px'}}>
                             <FontAwesomeIcon icon={faEdit} className="text-black" style={{fontSize: '14px'}}/>
                         </button>
-                        <div className="form-check form-switch mb-0 d-flex align-items-center">
-                            <input 
-                              className="form-check-input custom-green-switch shadow-sm" 
-                              type="checkbox" 
-                              role="switch" 
-                              checked={item.status} 
-                              onChange={() => toggleStatus(item.id)}
-                            />
-                        </div>
+                        
+                        {/* ปุ่มลบ (เปลี่ยนจากสวิตช์เขียว) */}
+                        <button 
+                            className="btn btn-white border shadow-sm rounded hover-shadow d-flex align-items-center justify-content-center" 
+                            style={{width:'36px', height:'36px'}}
+                            onClick={() => handleDelete(item.id)}
+                        >
+                            <FontAwesomeIcon icon={faTrash} className="text-danger" style={{fontSize: '14px'}}/>
+                        </button>
                       </div>
                   </td>
+
                 </tr>
               ))}
             </tbody>

@@ -15,6 +15,7 @@ import ContractsPage from './pages/ContractsPage.jsx';
 import ContractDetailPage from './pages/ContractDetailPage.jsx';
 import CustomerPage from './pages/CustomerPage';
 import ContactPage from './pages/ContactPage';
+import CreateProjectPage from './pages/CreateProjectPage';
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
       {/* Route สำหรับหน้าลูกค้า */}
       <Route path="/customers" element={<Layout><CustomerPage /></Layout>} />
       <Route path="/contacts" element={<Layout><ContactPage /></Layout>} />
+      <Route path="/create-project" element={<Layout><CreateProjectPage /></Layout>} />
     </Routes>
   );
 }

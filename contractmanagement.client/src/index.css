@@ -1,29 +1,33 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+/* --- 🎨 IMPORT FONT (Prompt) --- */
+/* หมายเหตุ: คุณใส่ link ใน index.html แล้ว แต่สามารถใส่สำรองไว้ตรงนี้ได้ครับ */
+@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap');
 
 :root {
   /* --- 🎨 COLOR PALETTE --- */
   --sidebar-width: 260px;
-  --sidebar-bg: #0F172A;        /* สีดำน้ำเงินเข้ม (Slate 900) */
-  --sidebar-text: #94A3B8;      /* สีตัวหนังสือปกติ (เทาเงิน) */
+  --sidebar-bg: #0F172A;        
+  --sidebar-text: #94A3B8;      
   
-  /* สี Active (สีฟ้าตามที่คุณขอ) */
   --sidebar-active-bg: #3B82F6; 
   --sidebar-active-text: #FFFFFF; 
   
-  --body-bg: #F8FAFC;           /* พื้นหลังเนื้อหา (เทาขาว) */
+  --body-bg: #F8FAFC;           
   --topbar-height: 70px;
 }
 
-/* Reset พื้นฐาน */
-* { box-sizing: border-box; }
+/* Reset พื้นฐาน และบังคับใช้ฟอนต์ Prompt ทั้งเว็บ */
+* { 
+  box-sizing: border-box; 
+  font-family: 'Prompt', sans-serif !important; /* บังคับใช้ Prompt */
+}
 
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Prompt', sans-serif; /* เปลี่ยนจาก Inter เป็น Prompt */
   background-color: var(--body-bg);
   color: #334155;
-  overflow: hidden; /* บังคับไม่ให้ Body Scroll */
+  overflow: hidden; 
 }
 
 /* --- 🏗️ LAYOUT STRUCTURE --- */
@@ -49,7 +53,6 @@ body {
   border-right: 1px solid rgba(255,255,255,0.05);
 }
 
-/* ส่วนหัว Sidebar */
 .sidebar-header {
   height: var(--topbar-height);
   display: flex;
@@ -62,42 +65,26 @@ body {
 .brand-text {
   color: #FFFFFF;
   font-size: 1.25rem;
-  font-weight: 800;
+  font-weight: 700; /* ปรับความหนาให้ดูเป็น Prompt มากขึ้น */
   letter-spacing: 1px;
   text-transform: uppercase;
 }
 
-/* --- ✨ WORLD CLASS SCROLLBAR (ไฮไลท์ของรอบนี้) --- */
-/* พื้นที่เมนู */
+/* --- ✨ WORLD CLASS SCROLLBAR --- */
 .sidebar-content {
   flex: 1;
-  overflow-y: auto;          /* ให้เลื่อนได้ */
-  overflow-x: hidden;        /* ปิดแกนแนวนอน */
-  padding: 1rem 0.8rem;      /* ระยะห่างภายใน */
+  overflow-y: auto;          
+  overflow-x: hidden;        
+  padding: 1rem 0.8rem;      
 
-  /* Firefox Scrollbar */
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }
 
-/* Chrome, Edge, Safari Scrollbar Style */
-.sidebar-content::-webkit-scrollbar {
-  width: 5px; /* ความกว้างบางเฉียบ */
-}
-
-.sidebar-content::-webkit-scrollbar-track {
-  background: transparent; /* รางใส */
-}
-
-.sidebar-content::-webkit-scrollbar-thumb {
-  background-color: transparent; /* ปกติ: มองไม่เห็น (เนียนไปกับพื้นหลัง) */
-  border-radius: 20px;
-}
-
-/* 🔥 เอฟเฟกต์: พอเอาเมาส์ไปชี้ที่เมนู ค่อยโชว์แท่งเลื่อนจางๆ */
-.sidebar-content:hover::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.15); /* สีขาวจางๆ โผล่มา */
-}
+.sidebar-content::-webkit-scrollbar { width: 5px; }
+.sidebar-content::-webkit-scrollbar-track { background: transparent; }
+.sidebar-content::-webkit-scrollbar-thumb { background-color: transparent; border-radius: 20px; }
+.sidebar-content:hover::-webkit-scrollbar-thumb { background-color: rgba(255, 255, 255, 0.15); }
 
 /* --- 🔗 LINK STYLING --- */
 .nav-link {
@@ -109,28 +96,27 @@ body {
   border-radius: 8px;
   color: var(--sidebar-text) !important;
   text-decoration: none !important;
-  font-weight: 500;
+  font-weight: 400; /* ฟอนต์ Prompt ปกติจะใช้ 400 */
   font-size: 0.95rem;
   transition: all 0.2s ease-in-out;
   cursor: pointer;
   border: 1px solid transparent;
 }
 
-/* ตอนเอาเมาส์ชี้ */
 .nav-link:hover {
   background-color: rgba(255,255,255,0.08) !important;
   color: #FFFFFF !important;
   transform: translateX(4px);
 }
 
-/* ตอนเลือก (Active) */
 .nav-link.active {
-  background-color: var(--sidebar-active-bg) !important; /* สีฟ้า */
-  color: var(--sidebar-active-text) !important; /* สีขาว */
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4); /* เงาสีฟ้าเรืองแสง */
-  font-weight: 600;
+  background-color: var(--sidebar-active-bg) !important; 
+  color: var(--sidebar-active-text) !important; 
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4); 
+  font-weight: 500; /* ตัวหนาปานกลางสำหรับ Active */
 }
 
+/* ... ส่วนที่เหลือคงเดิม ... */
 .nav-icon {
   width: 22px;
   min-width: 22px;
@@ -140,18 +126,6 @@ body {
   opacity: 0.9;
 }
 
-.nav-link.active .nav-icon { opacity: 1; }
-
-/* เมนูย่อย (Settings) */
-.nav-group-children {
-  margin-left: 10px;
-  padding-left: 10px;
-  border-left: 2px solid rgba(255,255,255,0.1);
-  margin-top: 5px;
-  margin-bottom: 5px;
-}
-
-/* --- 📄 MAIN CONTENT (ขวา) --- */
 .main-wrapper {
   flex-grow: 1 !important;
   height: 100vh;
@@ -162,40 +136,20 @@ body {
   position: relative;
 }
 
-/* Topbar */
 .topbar {
   height: var(--topbar-height);
-  min-height: var(--topbar-height);
   background: #ffffff;
   border-bottom: 1px solid #e2e8f0;
   display: flex;
   align-items: center;
   padding: 0 2rem;
   justify-content: flex-end;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
   z-index: 50;
 }
 
-/* Page Content */
 .page-content {
   flex: 1;
-  overflow-y: auto; /* Scroll เนื้อหาได้ */
+  overflow-y: auto; 
   padding: 2rem;
   width: 100%;
-}
-
-/* Scrollbar เนื้อหาปกติ (สีเทา) */
-.page-content::-webkit-scrollbar { width: 7px; height: 7px; }
-.page-content::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-.page-content::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-/* --- 📱 MOBILE RESPONSIVE --- */
-@media (max-width: 992px) {
-  .sidebar {
-    position: fixed !important;
-    left: -100%;
-    transition: left 0.3s ease;
-  }
-  .sidebar.show { left: 0; }
-  .main-wrapper { width: 100%; }
 }
