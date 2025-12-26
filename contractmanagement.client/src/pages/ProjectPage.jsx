@@ -1,20 +1,36 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // ✅ 1. เพิ่ม useNavigate
+import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-  faPlus, faSearch, faEdit, faTrash, faCalendarAlt, faChevronDown 
+  faPlus, faSearch, faEdit, faTrash, faCalendarAlt, faChevronDown, faCheck, faChevronLeft, faChevronRight
 } from "@fortawesome/free-solid-svg-icons";
-
-// ไม่ต้อง import SaveModal แล้ว เพราะไม่ได้ใช้หน้านี้
+import Swal from 'sweetalert2'; 
 
 const API_BASE_URL = "http://localhost:5056/api"; 
 
 const ProjectPage = () => {
-  const navigate = useNavigate(); // ✅ 2. สร้าง Hook สำหรับเปลี่ยนหน้า
+  const navigate = useNavigate();
+  
+  // --- Data State ---
   const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // --- Filter State ---
+  const [searchTerm, setSearchTerm] = useState('');
+  const [submittedSearch, setSubmittedSearch] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState('');
+  const [selectedYear, setSelectedYear] = useState('2568'); 
+  const [showYearDropdown, setShowYearDropdown] = useState(false); 
+
+  // --- Pagination State ---
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6; 
+
+  const yearOptions = ["2567", "2568", "2569"];
 
   // --- Functions ---
   const fetchProjects = async () => {
+    setLoading(true);
     try {
       const response = await fetch(`${API_BASE_URL}/Projects`);
       if (response.ok) {
@@ -28,40 +44,117 @@ const ProjectPage = () => {
             date: item.createdDate ? new Date(item.createdDate).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }) : '-',
             status: item.projectStatus || 'จัดทำโครงการ',
             isActive: true 
-        }));
-        setData(mappedData);
+        }))
+        .sort((a, b) => b.id - a.id);
+
+        setTimeout(() => {
+            setData(mappedData);
+            setLoading(false);
+        }, 500);
+      } else {
+        setLoading(false);
       }
     } catch (err) {
       console.error("Error fetching projects:", err);
+      setLoading(false);
+    }
+  };
+
+  const handleSearchClick = () => {
+    setSubmittedSearch(searchTerm);
+  };
+
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    if (value === '') {
+        setSubmittedSearch('');
+    }
+  };
+
+  // --- Filter Logic ---
+  const filteredData = useMemo(() => {
+    return data.filter(item => {
+      const matchesYear = item.date.includes(selectedYear);
+      const matchesStatus = selectedStatus === '' || 
+          item.status.replace(/\s/g, '') === selectedStatus.replace(/\s/g, '');
+      const matchesSearch = String(item.name).toLowerCase().includes(submittedSearch.toLowerCase()) || 
+                            String(item.code).toLowerCase().includes(submittedSearch.toLowerCase());
+      return matchesYear && matchesStatus && matchesSearch;
+    });
+  }, [data, selectedYear, selectedStatus, submittedSearch]); 
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedYear, selectedStatus, submittedSearch]);
+
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
+
+  const goToPage = (pageNumber) => {
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+        setCurrentPage(pageNumber);
     }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("คุณต้องการลบโครงการนี้ใช่หรือไม่?")) {
+    const result = await Swal.fire({
+        title: 'ยืนยันการลบ?',
+        text: "คุณต้องการลบโครงการนี้ใช่หรือไม่ ข้อมูลจะกู้คืนไม่ได้",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#e5e7eb',
+        confirmButtonText: 'ลบข้อมูล',
+        cancelButtonText: 'ยกเลิก',
+        cancelButtonTextColor: '#374151',
+        reverseButtons: true,
+        focusCancel: true
+    });
+
+    if (result.isConfirmed) {
+      const previousData = [...data];
+      setData(prev => prev.filter(item => item.id !== id));
+
       try {
         const response = await fetch(`${API_BASE_URL}/Projects/${id}`, { method: 'DELETE' });
-        if (response.ok) fetchProjects(); 
-        else alert("ไม่สามารถลบข้อมูลได้");
+        if (response.ok) {
+            Swal.fire({
+                icon: 'success',
+                title: 'ลบข้อมูลสำเร็จ',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true
+            });
+        } else {
+            Swal.fire('Error', 'ไม่สามารถลบข้อมูลได้', 'error');
+            setData(previousData);
+        }
       } catch (error) {
         console.error("Error deleting:", error);
+        Swal.fire('Error', 'Server connection failed', 'error');
+        setData(previousData);
       }
     }
   }
 
   useEffect(() => {
     fetchProjects();
-    // ลบ fetchMasterData ออก เพราะหน้านี้แค่โชว์ลิสต์ ไม่ได้ใช้ Dropdown ประเภทโครงการ
   }, []);
 
-  // ฟังก์ชันแสดงสี Status
   const renderStatusBadge = (status) => {
     let config = { bg: '#e8f0fe', color: '#1a73e8', dot: '#1a73e8' }; 
+    const s = status.trim().replace(/\s/g, ''); 
 
-    if (status === 'ร่าง TOR' || status === 'ร่างTOR') {
+    if (s === 'ร่างTOR') {
       config = { bg: '#fff7ed', color: '#ea580c', dot: '#ea580c' }; 
-    } else if (status === 'ยื่นข้อเสนอ') {
+    } else if (s === 'ยื่นข้อเสนอ') {
       config = { bg: '#f5f3ff', color: '#7c3aed', dot: '#7c3aed' }; 
-    } else if (status === 'ดำเนินงาน') {
+    } else if (s === 'ดำเนินงาน') {
       config = { bg: '#ecfdf5', color: '#059669', dot: '#059669' }; 
     }
 
@@ -71,130 +164,196 @@ const ProjectPage = () => {
             backgroundColor: config.bg, 
             color: config.color, 
             fontSize: '0.75rem', 
-            padding: '8px 16px', 
+            padding: '6px 12px', 
             display: 'inline-flex', 
             alignItems: 'center', 
-            gap: '8px' 
+            gap: '6px' 
           }}>
-          <span style={{width:'8px', height:'8px', backgroundColor: config.dot, borderRadius:'50%', display:'inline-block'}}></span>
+          <span style={{width:'6px', height:'6px', backgroundColor: config.dot, borderRadius:'50%', display:'inline-block'}}></span>
           {status}
       </span>
     );
   };
 
+  const styles = `
+    body { background-color: #f8fafc; }
+    .card-premium {
+        border: none; border-radius: 20px; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.05);
+        background: white; overflow: hidden; min-height: 650px; display: flex; flex-direction: column;
+    }
+    .table-header {
+        background-color: #f8fafc; font-size: 0.85rem; font-weight: 700; color: #000000;
+        text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e2e8f0;
+    }
+    .table-row {
+        transition: all 0.2s ease; border-bottom: 1px solid #f1f5f9;
+        /* ไม่มี cursor: pointer แล้ว เพราะคลิกทั้งแถวไม่ได้ */
+    }
+    .table-row:hover {
+        background-color: #f8fafc; transform: translateY(-1px); box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    }
+    .btn-action {
+        width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+        border-radius: 50%; transition: all 0.2s; border: 1px solid #f1f5f9; background: white; cursor: pointer;
+    }
+    .btn-action.edit { color: #000000; }
+    .btn-action.edit:hover {
+        background-color: #eff6ff; color: #3b82f6; border-color: #dbeafe; transform: translateY(-2px);
+    }
+    .btn-action.delete { color: #dc2626; background-color: #fff5f5; border-color: #fee2e2; }
+    .btn-action.delete:hover {
+        background-color: #fef2f2; border-color: #fca5a5; transform: translateY(-2px);
+    }
+    .pagination-btn {
+        min-width: 36px; height: 36px; border-radius: 8px; border: none; background: white;
+        color: #000000; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center;
+        justify-content: center; transition: all 0.2s; margin: 0 3px; cursor: pointer;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .pagination-btn.active { background-color: #3b82f6; color: white; }
+    .custom-input { border-radius: 10px; border: 1px solid #e2e8f0; height: 42px; background-color: #f8fafc; color: #000; }
+  `;
+
   return (
-  <div className="container-fluid px-4 py-4" style={{ backgroundColor: '#f9fafb', minHeight: '100vh' }}>
+  <div className="container-fluid px-4 py-4" style={{ fontFamily: "'Inter', 'Noto Sans Thai', sans-serif" }}>
+    <style>{styles}</style>
     
-    <div className="d-flex justify-content-between align-items-end mb-4">
+    <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3">
       <div>
-          <h2 className="fw-bold mb-1" style={{ color: '#000000' }}>โครงการ</h2>
-          <span style={{ color: '#64748b', fontSize: '0.9rem' }}>จัดการและติดตามสถานะข้อมูลโครงการทั้งหมดในระบบ</span>
+          <h3 className="fw-bold mb-1 text-black">โครงการ</h3>
+          <span className="text-black small ps-1 fw-bold">ระบบจัดการข้อมูลโครงการ</span>
       </div>
-      
-      {/* ✅ 3. แก้ปุ่ม เพิ่มโครงการ ให้ลิ้งค์ไปหน้าใหม่แทนการเปิด Modal */}
       <button 
-        className="btn btn-primary fw-bold shadow-sm px-4 py-2" 
-        style={{ backgroundColor: '#3b82f6', borderColor: '#3b82f6', borderRadius: '8px' }} 
+        className="btn btn-primary px-4 py-2 rounded-3 shadow-sm fw-bold d-flex align-items-center" 
+        style={{ backgroundColor: '#3b82f6', borderColor: '#3b82f6', height: '45px' }}
         onClick={() => navigate('/create-project')} 
       >
           <FontAwesomeIcon icon={faPlus} className="me-2" /> เพิ่มโครงการ
       </button>
     </div>
 
-    {/* Filter Bar */}
-    <div className="card border-0 shadow-sm mb-4 rounded-3 bg-white">
-      <div className="card-body p-3">
+    <div className="card-premium">
+      <div className="p-4 border-bottom">
         <div className="d-flex flex-wrap gap-3 align-items-center">
-          <div className="bg-light border rounded px-3 py-2 d-flex align-items-center" style={{ minWidth: '120px', cursor: 'pointer', borderColor: '#e2e8f0' }}>
-              <FontAwesomeIcon icon={faCalendarAlt} className="text-muted me-2"/> 
-              <span className="fw-bold text-dark me-auto">2568</span>
-              <FontAwesomeIcon icon={faChevronDown} className="text-muted ms-2" style={{ fontSize: '0.8rem' }}/> 
+          
+          <div className="position-relative">
+            <div className="bg-light border rounded px-3 d-flex align-items-center justify-content-between shadow-sm" 
+                style={{minWidth: '130px', height: '42px', cursor: 'pointer'}}
+                onClick={() => setShowYearDropdown(!showYearDropdown)}>
+                  <div className="d-flex align-items-center">
+                      <FontAwesomeIcon icon={faCalendarAlt} className="text-muted me-2"/> 
+                      <span className="fw-bold text-dark">{selectedYear}</span>
+                  </div>
+                  <FontAwesomeIcon icon={faChevronDown} className="text-dark" style={{ fontSize: '0.8rem' }}/> 
+            </div>
+            {showYearDropdown && (
+              <div className="position-absolute mt-1 bg-white border rounded-3 shadow-lg p-1" style={{ width: '100%', zIndex: 1000 }}>
+                {yearOptions.map(year => (
+                  <div key={year} className="px-3 py-2 rounded-2" style={{cursor: 'pointer'}} onClick={() => { setSelectedYear(year); setShowYearDropdown(false); }}>
+                    <span>{year}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
+
+          <select className="form-select bg-light text-dark shadow-sm" style={{ width: '220px', height: '42px', borderRadius: '10px' }} value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)}>
+             <option value="">สถานะทั้งหมด</option>
+             <option value="จัดทำโครงการ">จัดทำโครงการ</option>
+             <option value="ร่าง TOR">ร่าง TOR</option>
+             <option value="ยื่นข้อเสนอ">ยื่นข้อเสนอ</option>
+             <option value="ดำเนินงาน">ดำเนินงาน</option>
+          </select>
 
           <div className="flex-grow-1"></div>
 
           <div className="position-relative" style={{ width: '300px' }}>
-              <FontAwesomeIcon icon={faSearch} className="text-muted position-absolute" style={{ left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
-              <input type="text" className="form-control ps-5 border border-light-subtle bg-light text-dark" placeholder="ค้นหาชื่อหรือรหัสโครงการ..." style={{ borderRadius: '8px', height: '42px', fontSize: '0.9rem' }} />
+              <FontAwesomeIcon icon={faSearch} className="text-black position-absolute" style={{ left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
+              <input type="text" className="form-control ps-5 custom-input" placeholder="ค้นหาชื่อหรือรหัสโครงการ..." value={searchTerm} onChange={handleSearchChange} onKeyDown={(e) => e.key === 'Enter' && handleSearchClick()} />
           </div>
           
-          <button className="btn btn-dark px-4 fw-bold shadow-sm" style={{ backgroundColor: '#0f172a', borderRadius: '8px', height: '42px' }}>
+          {/* ✅ แก้ไขตรงนี้: เพิ่ม borderColor ให้เป็นสีเดียวกับ background */}
+          <button 
+              className="btn btn-primary fw-bold shadow-sm px-4" 
+              onClick={handleSearchClick} 
+              style={{ 
+                  backgroundColor: '#3b82f6', 
+                  borderColor: '#3b82f6', // <-- เพิ่มบรรทัดนี้
+                  height: '42px', 
+                  borderRadius: '10px' 
+              }}
+          >
               ค้นหา
           </button>
         </div>
       </div>
-    </div>
 
-    {/* Table */}
-    <div className="bg-white rounded-3 shadow-sm overflow-hidden">
-        <div className="table-responsive">
+      <div className="table-responsive flex-grow-1">
           <table className="table mb-0 align-middle">
-            <thead style={{ backgroundColor: '#f3f4f6' }}>
+            <thead className="table-header">
               <tr>
-                <th className="py-3 ps-4 text-start text-dark small text-uppercase fw-bold border-bottom-0" style={{ width: '35%' }}>ชื่อโครงการ</th>
-                <th className="py-3 text-start text-dark small text-uppercase fw-bold border-bottom-0" style={{ width: '15%' }}>หน่วยงาน</th>
-                <th className="py-3 text-start text-dark small text-uppercase fw-bold border-bottom-0" style={{ width: '10%' }}>วันที่สร้าง</th>
-                <th className="py-3 text-start text-dark small text-uppercase fw-bold border-bottom-0" style={{ width: '15%' }}>สร้างโดย</th>
-                <th className="py-3 text-center text-dark small text-uppercase fw-bold border-bottom-0" style={{ width: '15%' }}>สถานะ</th>
-                <th className="py-3 text-center text-dark small text-uppercase fw-bold border-bottom-0" style={{ width: '10%' }}>จัดการ</th>
+                <th className="py-3 ps-4 text-start border-0" style={{ width: '30%' }}>ชื่อโครงการ</th>
+                <th className="py-3 text-start border-0" style={{ width: '15%' }}>หน่วยงาน</th>
+                <th className="py-3 text-start border-0" style={{ width: '15%' }}>วันที่สร้าง</th>
+                <th className="py-3 text-start border-0" style={{ width: '15%' }}>สร้างโดย</th>
+                <th className="py-3 text-center border-0" style={{ width: '15%' }}>สถานะ</th>
+                <th className="py-3 text-center border-0" style={{ width: '10%' }}>จัดการ</th>
               </tr>
             </thead>
             <tbody>
-              {data.map((item) => (
-                <tr key={item.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                  <td className="py-3 ps-4">
+              {loading ? (
+                 [...Array(itemsPerPage)].map((_, i) => (
+                    <tr key={i}><td colSpan="6" className="py-4 ps-4"><div className="placeholder-glow"><span className="placeholder col-6 rounded" style={{height: '20px'}}></span></div></td></tr>
+                 ))
+              ) : filteredData.length === 0 ? (
+                  <tr><td colSpan="6" className="text-center py-5 text-dark">ไม่พบข้อมูล</td></tr>
+              ) : (
+                currentItems.map((item) => (
+                <tr key={item.id} className="table-row">
+                  <td className="py-3 ps-4 text-start">
                       <div className="d-flex flex-column">
-                          <span className="text-muted small mb-1">{item.code}</span>
+                          <span className="text-black small mb-1">{item.code}</span>
                           <span className="fw-bold text-dark">{item.name}</span>
                       </div>
                   </td>
-                  <td className="py-3 text-dark small">{item.unit}</td>
-                  <td className="py-3 text-dark small">{item.date}</td>
-                  <td className="py-3 text-dark small">{item.createdBy}</td>
+                  <td className="py-3 text-start text-black small">{item.unit}</td>
+                  <td className="py-3 text-start text-black small">{item.date}</td>
+                  <td className="py-3 text-start text-black small">{item.createdBy}</td>
                   <td className="py-3 text-center">{renderStatusBadge(item.status)}</td>
-                  
                   <td className="py-3 text-center">
-                      <div className="btn-group">
+                      <div className="d-flex justify-content-center gap-2">
+                        {/* ✅ ปุ่มแก้ไข: คลิกตรงนี้เท่านั้นถึงจะไปหน้า EditProject */}
                         <button 
-                          className="btn btn-sm btn-white border shadow-sm mx-1 rounded text-dark hover-shadow"
-                          onClick={() => alert('แก้ไข (Mock)')}
-                          style={{ width: '32px', height: '32px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                          className="btn-action edit shadow-sm"
+                          onClick={() => navigate(`/edit-project/${item.id}`)}
+                          title="แก้ไข"
                         >
                           <FontAwesomeIcon icon={faEdit} size="sm" />
                         </button>
-                        <button 
-                          className="btn btn-sm btn-white border shadow-sm mx-1 rounded text-danger hover-shadow" 
-                          onClick={() => handleDelete(item.id)}
-                          style={{ width: '32px', height: '32px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
-                        >
+                        
+                        <button className="btn-action delete shadow-sm" onClick={() => handleDelete(item.id)} title="ลบ">
                           <FontAwesomeIcon icon={faTrash} size="sm" />
                         </button>
                       </div>
                   </td>
                 </tr>
-              ))}
-              {data.length === 0 && (
-                  <tr><td colSpan="6" className="text-center py-5 text-dark">ไม่พบข้อมูล</td></tr>
-              )}
+              )))}
             </tbody>
           </table>
-        </div>
-
-        {/* Pagination */}
-        <div className="px-4 py-3 border-top d-flex align-items-center bg-white">
-            <button className="btn btn-light border me-2" style={{width:'36px', height:'36px'}} disabled>
-                <FontAwesomeIcon icon={faChevronDown} rotation={90} className="small text-secondary"/>
-            </button>
-            <button className="btn btn-dark border fw-bold me-2" style={{width:'36px', height:'36px', backgroundColor:'#000000', borderColor:'#000000'}}>1</button>
-            <button className="btn btn-primary ms-auto" style={{width:'36px', height:'36px', backgroundColor: '#3b82f6', borderColor:'#3b82f6'}}>
-                <FontAwesomeIcon icon={faChevronDown} rotation={270} className="small text-white"/>
-            </button>
-        </div>
       </div>
-
-      {/* ✅ 4. ลบ Code Modal และ SaveModal ออกไปทั้งหมดจากตรงนี้ */}
-
+    </div> 
+    
+    {/* Pagination */}
+    <div className="d-flex justify-content-end align-items-center mt-3 px-2">
+        <div className="d-flex align-items-center">
+            <button className={`pagination-btn ${currentPage === 1 ? 'disabled' : ''}`} onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1}><FontAwesomeIcon icon={faChevronLeft} style={{fontSize: '0.7rem'}}/></button>
+            {[...Array(totalPages)].map((_, i) => (
+                <button key={i} className={`pagination-btn ${currentPage === i + 1 ? 'active' : ''}`} onClick={() => goToPage(i + 1)}>{i + 1}</button>
+            ))}
+            <button className={`pagination-btn ${currentPage === totalPages || totalPages === 0 ? 'disabled' : ''}`} onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages || totalPages === 0}><FontAwesomeIcon icon={faChevronRight} style={{fontSize: '0.7rem'}}/></button>
+        </div>
     </div>
+  </div>
   );
 };
 

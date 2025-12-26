@@ -117,7 +117,7 @@ const Layout = ({ children }) => {
         style={{
             width: isSidebarOpen ? '260px' : '0px',       
             minWidth: isSidebarOpen ? '260px' : '0px',    
-            backgroundColor: '#0f172a',                   
+            backgroundColor: '#1e293b',                   
             color: '#fff',
             transition: 'all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)', 
             overflow: 'hidden',                           
@@ -242,7 +242,7 @@ const Layout = ({ children }) => {
       {/* CSS Injection */}
       <style>{`
         .nav-link {
-            color: #94a3b8;
+            color: #cbd5e1;
             padding: 12px 20px;
             margin: 4px 12px;
             border-radius: 8px;

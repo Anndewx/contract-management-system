@@ -129,3 +129,32 @@
         margin-bottom: 1px !important; 
     }
 }
+/* ลบ Background Icon เดิมของ Bootstrap เมื่อ is-invalid */
+.form-control.is-invalid {
+  background-image: none !important;
+  border-color: #dc3545 !important;
+}
+
+/* จัดตำแหน่งไอคอน Error ให้อยู่ขวาสุด กึ่งกลางแนวตั้ง */
+.error-icon {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  color: #dc3545; /* สีแดง */
+  pointer-events: none; /* เพื่อให้คลิกทะลุได้ */
+  z-index: 5;
+}
+
+/* ปรับตำแหน่งปุ่มลูกตา เมื่อมี Error เกิดขึ้น (ขยับหลบไปทางซ้าย) */
+.eye-icon-btn.with-error {
+  right: 40px !important; /* ขยับจากเดิมที่อยู่ขวาสุด */
+}
+
+/* ข้อความแจ้งเตือนด้านล่าง */
+.error-text {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  text-align: left;
+}

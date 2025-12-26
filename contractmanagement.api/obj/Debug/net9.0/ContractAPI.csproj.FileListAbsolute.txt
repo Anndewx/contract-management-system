@@ -101,6 +101,7 @@ C:\Users\INNO-Dev4\Desktop\contractmanagement\contractmanagement.api\obj\Debug\n
 C:\Users\INNO-Dev4\Desktop\contractmanagement\contractmanagement.api\obj\Debug\net9.0\ContractAPI.csproj.CoreCompileInputs.cache
 C:\Users\INNO-Dev4\Desktop\contractmanagement\contractmanagement.api\obj\Debug\net9.0\ContractAPI.MvcApplicationPartsAssemblyInfo.cs
 C:\Users\INNO-Dev4\Desktop\contractmanagement\contractmanagement.api\obj\Debug\net9.0\ContractAPI.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\INNO-Dev4\Desktop\contractmanagement\contractmanagement.api\obj\Debug\net9.0\ContractAPI.sourcelink.json
 C:\Users\INNO-Dev4\Desktop\contractmanagement\contractmanagement.api\obj\Debug\net9.0\rjimswa.dswa.cache.json
 C:\Users\INNO-Dev4\Desktop\contractmanagement\contractmanagement.api\obj\Debug\net9.0\rjsmrazor.dswa.cache.json
 C:\Users\INNO-Dev4\Desktop\contractmanagement\contractmanagement.api\obj\Debug\net9.0\rjsmcshtml.dswa.cache.json

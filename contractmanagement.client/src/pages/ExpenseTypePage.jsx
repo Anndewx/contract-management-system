@@ -1,28 +1,41 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-  faPlus, faSearch, faEdit, faTrash, faFilter
+  faPlus, faSearch, faEdit, faTrash, faFilter, 
+  faChevronLeft, faChevronRight
 } from "@fortawesome/free-solid-svg-icons";
+import Swal from 'sweetalert2'; 
 
-// ⚠️ ตรวจสอบ Port Backend ให้ถูกต้อง
 const API_BASE_URL = "http://localhost:5056/api";
 
 const ExpenseTypePage = () => {
+  // --- UI State ---
   const [showModal, setShowModal] = useState(false);
+  
+  // --- Data State ---
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  // --- State เก็บข้อมูลฟอร์ม ---
+  // --- Filter & Sort State ---
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all'); // all, active, inactive
+  const [sortOrder, setSortOrder] = useState('latest'); // latest, oldest
+
+  // --- ✅ Pagination State (เพิ่มใหม่) ---
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6; 
+
+  // --- Form State ---
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     isActive: true
   });
-  
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
-  // --- 1. Fetch Data จาก API ---
+  // --- Fetch Data ---
   const fetchExpenseTypes = async () => {
+    setLoading(true);
     try {
       const response = await fetch(`${API_BASE_URL}/DisbursementType`);
       if (response.ok) {
@@ -30,19 +43,20 @@ const ExpenseTypePage = () => {
         const mappedData = result.map(item => ({
             id: item.id || item.Id, 
             name: item.name,
-            code: `EXP-${(item.id || 0).toString().padStart(3, '0')}`,
+            // ลบรหัส code ออกจาก object ที่ใช้แสดงผลตามที่เคยขอไว้
             description: item.description,
             createdBy: item.createdBy || 'Admin',
             date: item.createdDate ? new Date(item.createdDate).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }) : '-',
             isActive: item.isActive
         }));
         setData(mappedData);
+        setLoading(false);
       } else {
         console.error("Failed to fetch data");
+        setLoading(false);
       }
     } catch (err) {
       console.error("Error connecting to API:", err);
-    } finally {
       setLoading(false);
     }
   };
@@ -51,16 +65,78 @@ const ExpenseTypePage = () => {
     fetchExpenseTypes();
   }, []);
 
-  // --- 2. เปิด Modal ---
+  // --- Filter & Sort Logic ---
+  const filteredData = useMemo(() => {
+    let result = [...data];
+
+    // 1. Search
+    if (searchTerm) {
+        const lowerTerm = searchTerm.toLowerCase();
+        result = result.filter(item => 
+            item.name.toLowerCase().includes(lowerTerm) ||
+            (item.description && item.description.toLowerCase().includes(lowerTerm))
+        );
+    }
+
+    // 2. Filter Status
+    if (filterStatus !== 'all') {
+        const isActive = filterStatus === 'active';
+        result = result.filter(item => item.isActive === isActive);
+    }
+
+    // 3. Sort Order
+    result.sort((a, b) => {
+        if (sortOrder === 'latest') {
+            return b.id - a.id; // ID มาก = ใหม่กว่า
+        } else {
+            return a.id - b.id; // ID น้อย = เก่ากว่า
+        }
+    });
+
+    return result;
+  }, [data, searchTerm, filterStatus, sortOrder]);
+
+  // --- ✅ Reset Page when Filter Changes ---
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterStatus, sortOrder]);
+
+  // --- ✅ Pagination Calculation ---
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
+
+  const goToPage = (pageNumber) => {
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+        setCurrentPage(pageNumber);
+    }
+  };
+
+  // --- Handlers ---
+  const handleClearFilters = () => {
+      setSearchTerm('');
+      setFilterStatus('all');
+      setSortOrder('latest');
+  };
+
   const handleOpenModal = () => {
     setFormData({ name: '', description: '', isActive: true });
     setError('');
     setShowModal(true);
   };
 
-  // --- 3. บันทึกข้อมูล (POST) ---
   const handleSave = async () => {
     if (!formData.name.trim()) {
+      Swal.fire({
+          icon: 'warning',
+          title: 'ข้อมูลไม่ครบ',
+          text: 'กรุณาระบุชื่อประเภท',
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 2000
+      });
       setError('กรุณาระบุชื่อประเภท');
       return; 
     }
@@ -82,18 +158,42 @@ const ExpenseTypePage = () => {
       if (response.ok) {
         setShowModal(false);
         fetchExpenseTypes(); 
+        
+        Swal.fire({
+            icon: 'success',
+            title: 'บันทึกสำเร็จ',
+            text: 'เพิ่มประเภทการเบิกจ่ายเรียบร้อยแล้ว',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2000,
+            timerProgressBar: true
+        });
       } else {
-        alert("เกิดข้อผิดพลาดในการบันทึก");
+        Swal.fire('Error', 'เกิดข้อผิดพลาดในการบันทึก', 'error');
       }
     } catch (err) {
       console.error("Error saving:", err);
-      alert("ไม่สามารถเชื่อมต่อ Server ได้");
+      Swal.fire('Error', 'ไม่สามารถเชื่อมต่อ Server ได้', 'error');
     }
   };
 
-  // --- 4. ลบข้อมูล (DELETE) ---
   const handleDelete = async (id) => {
-    if (!window.confirm("คุณต้องการลบข้อมูลนี้ใช่หรือไม่?")) return;
+    const result = await Swal.fire({
+        title: 'ยืนยันการลบ?',
+        text: "คุณต้องการลบข้อมูลนี้ใช่หรือไม่ ข้อมูลจะกู้คืนไม่ได้",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#e5e7eb',
+        confirmButtonText: 'ลบข้อมูล',
+        cancelButtonText: 'ยกเลิก',
+        cancelButtonTextColor: '#374151',
+        reverseButtons: true,
+        focusCancel: true
+    });
+
+    if (!result.isConfirmed) return;
 
     const previousData = [...data];
     setData(prev => prev.filter(item => item.id !== id));
@@ -104,32 +204,149 @@ const ExpenseTypePage = () => {
       });
       
       if (response.ok) {
-        console.log(`Deleted ID ${id} successfully`);
-      } else if (response.status === 404) {
-        console.warn(`ID ${id} was already deleted.`);
+        Swal.fire({
+            icon: 'success',
+            title: 'ลบข้อมูลสำเร็จ',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2000
+        });
       } else {
         throw new Error("Delete failed");
       }
     } catch (error) {
       console.error("Error deleting:", error);
-      alert("เกิดข้อผิดพลาดในการเชื่อมต่อ ระบบจะคืนค่าข้อมูลเดิม");
+      Swal.fire('Error', 'เกิดข้อผิดพลาดในการเชื่อมต่อ', 'error');
       setData(previousData);
     }
   }
 
+  // --- Premium Styles ---
+  const styles = `
+    body { background-color: #f8fafc; }
+    .card-premium {
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px -5px rgba(0,0,0,0.05);
+        background: white;
+        overflow: hidden;
+        min-height: 600px;
+        display: flex;
+        flex-direction: column;
+    }
+    .table-header {
+        background-color: #f8fafc;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #000000;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    .table-row {
+        transition: all 0.2s ease;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    .table-row:hover {
+        background-color: #f8fafc;
+    }
+    .btn-action {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.2s;
+        border: 1px solid #f1f5f9;
+        background: white;
+        cursor: pointer;
+    }
+    .btn-action.edit:hover {
+        background-color: #eff6ff;
+        color: #3b82f6;
+        border-color: #dbeafe;
+        transform: translateY(-2px);
+    }
+    .btn-action.delete { color: #dc2626; }
+    .btn-action.delete:hover {
+        background-color: #fef2f2;
+        color: #dc2626;
+        border-color: #fee2e2;
+        transform: translateY(-2px);
+    }
+    .pagination-btn {
+        min-width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        border: none;
+        background: white;
+        color: #000000;
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        margin: 0 3px;
+        cursor: pointer;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .pagination-btn:hover:not(.active):not(.disabled) {
+        background-color: #fff;
+        color: #3b82f6;
+        transform: translateY(-2px);
+    }
+    .pagination-btn.active {
+        background-color: #3b82f6;
+        color: white;
+        box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+    }
+    .pagination-btn.disabled {
+        color: #ccc;
+        cursor: not-allowed;
+        box-shadow: none;
+        background-color: #f8fafc;
+    }
+    .custom-input {
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        height: 42px;
+        background-color: #f8fafc;
+        color: #000;
+    }
+    .custom-input:focus {
+        background-color: white;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    .filter-select {
+        height: 42px;
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        cursor: pointer;
+        font-size: 0.9rem;
+        background-color: white;
+        color: #334155;
+    }
+  `;
+
   return (
-    <div className="container-fluid p-0">
+    <div className="container-fluid px-4 py-4" style={{ fontFamily: "'Inter', 'Noto Sans Thai', sans-serif" }}>
+      <style>{styles}</style>
       
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h3 className="fw-bold mb-1" style={{ color: '#000000' }}>ประเภทการเบิกจ่าย</h3>
-            <span style={{ color: '#333333', fontSize: '0.9rem' }}>จัดการข้อมูลการจ่ายเงินและช่องทางการชำระเงิน</span>
+            <h3 className="fw-bold mb-1 text-black">
+               ประเภทการเบิกจ่าย
+            </h3>
+            <span className="text-black small ps-1 fw-bold">จัดการข้อมูลการจ่ายเงินและช่องทางการชำระเงิน</span>
         </div>
-        {/* 🔵 ปุ่มเพิ่มรายการ: สีฟ้าตามที่ขอ */}
         <button 
           className="btn btn-primary px-4 py-2 rounded-3 shadow-sm fw-bold d-flex align-items-center"
-          style={{ backgroundColor: '#3b82f6', borderColor: '#3b82f6', transition: 'all 0.2s' }}
+          style={{ backgroundColor: '#3b82f6', borderColor: '#3b82f6', height: '45px' }}
           onClick={handleOpenModal}
         >
           <FontAwesomeIcon icon={faPlus} className="me-2" /> 
@@ -137,90 +354,141 @@ const ExpenseTypePage = () => {
         </button>
       </div>
 
-      {/* Filter Bar */}
-      <div className="card border-0 shadow-sm mb-4 rounded-3 bg-white">
-        <div className="card-body p-3">
-            <div className="row g-3 align-items-center">
-                <div className="col-12 col-md-5">
-                    <div className="position-relative">
-                        <FontAwesomeIcon icon={faSearch} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#000000', pointerEvents: 'none' }} />
-                        <input type="text" className="form-control" style={{ paddingLeft: '45px', height: '45px', borderColor: '#e2e8f0', color: '#000000', fontSize: '0.95rem', borderRadius: '8px', backgroundColor: '#f8fafc' }} placeholder="ค้นหาชื่อประเภท..." />
-                    </div>
+      {/* Main Card */}
+      <div className="card-premium">
+        
+        {/* Filter Bar */}
+        <div className="p-4 border-bottom bg-white">
+            <div className="d-flex flex-wrap gap-3">
+                {/* Search */}
+                <div className="position-relative flex-grow-1" style={{ minWidth: '250px' }}>
+                    <FontAwesomeIcon icon={faSearch} className="text-black position-absolute" style={{ left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
+                    <input 
+                        type="text" 
+                        className="form-control ps-5 custom-input" 
+                        placeholder="ค้นหาชื่อประเภท..." 
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
                 </div>
-                <div className="col-6 col-md-3">
-                    <select className="form-select text-dark" style={{ height: '45px', borderColor: '#e2e8f0', borderRadius: '8px' }}><option>สถานะทั้งหมด</option></select>
+                
+                {/* Status Filter */}
+                <div style={{ minWidth: '180px' }}>
+                    <select 
+                        className="form-select filter-select shadow-sm"
+                        value={filterStatus}
+                        onChange={(e) => setFilterStatus(e.target.value)}
+                    >
+                        <option value="all">สถานะทั้งหมด</option>
+                        <option value="active">เปิดใช้งาน</option>
+                        <option value="inactive">ปิดใช้งาน</option>
+                    </select>
                 </div>
-                <div className="col-6 col-md-2">
-                    <select className="form-select text-dark" style={{ height: '45px', borderColor: '#e2e8f0', borderRadius: '8px' }}><option>ล่าสุด</option></select>
+
+                {/* Date Sort */}
+                <div style={{ minWidth: '180px' }}>
+                    <select 
+                        className="form-select filter-select shadow-sm"
+                        value={sortOrder}
+                        onChange={(e) => setSortOrder(e.target.value)}
+                    >
+                        <option value="latest">วันที่บันทึก (ล่าสุด)</option>
+                        <option value="oldest">วันที่บันทึก (เก่าสุด)</option>
+                    </select>
                 </div>
-                <div className="col-12 col-md-2">
-                    <button className="btn btn-light w-100 border text-dark fw-bold" style={{ height: '45px', borderColor: '#e2e8f0', borderRadius: '8px' }}>
+
+                {/* Clear Button */}
+                <div>
+                    <button 
+                        className="btn btn-light border text-dark fw-bold d-flex align-items-center justify-content-center shadow-sm" 
+                        style={{ height: '42px', borderRadius: '10px', minWidth: '100px', backgroundColor: '#f1f5f9' }}
+                        onClick={handleClearFilters}
+                    >
                         <FontAwesomeIcon icon={faFilter} className="me-2" /> ล้างค่า
                     </button>
                 </div>
             </div>
         </div>
-      </div>
 
-      {/* Table */}
-      <div className="card border-0 shadow-sm rounded-3 overflow-hidden">
-        <div className="table-responsive">
-          <table className="table table-hover mb-0 align-middle">
-            <thead style={{ backgroundColor: '#f1f5f9' }}>
+        {/* Table */}
+        <div className="table-responsive flex-grow-1">
+          <table className="table mb-0 align-middle">
+            <thead className="table-header">
               <tr>
-                <th className="py-3 ps-4" style={{ width: '5%' }}><input type="checkbox" className="form-check-input cursor-pointer" /></th>
-                <th className="py-3 fw-bold text-uppercase text-start" style={{ color: '#000000', fontSize: '0.85rem' }}>ชื่อประเภท / รหัส</th>
-                <th className="py-3 fw-bold text-uppercase text-start" style={{ color: '#000000', fontSize: '0.85rem' }}>บันทึกโดย</th>
-                <th className="py-3 fw-bold text-uppercase text-start" style={{ color: '#000000', fontSize: '0.85rem' }}>วันที่บันทึก</th>
-                <th className="py-3 fw-bold text-uppercase text-center" style={{ color: '#000000', fontSize: '0.85rem' }}>สถานะ</th>
-                <th className="py-3 fw-bold text-uppercase text-center" style={{ color: '#000000', fontSize: '0.85rem' }}>จัดการ</th>
+                {/* ความกว้างคอลัมน์: 20% x 4 + 10% x 2 */}
+                <th className="py-3 ps-4 text-start border-0" style={{ width: '20%' }}>ชื่อประเภท</th>
+                <th className="py-3 text-start border-0" style={{ width: '20%' }}>รายละเอียด</th>
+                <th className="py-3 text-start border-0" style={{ width: '20%' }}>บันทึกโดย</th>
+                <th className="py-3 text-start border-0" style={{ width: '20%' }}>วันที่บันทึก</th>
+                <th className="py-3 text-center border-0" style={{ width: '10%' }}>สถานะ</th>
+                <th className="py-3 text-center border-0" style={{ width: '10%' }}>จัดการ</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                 <tr><td colSpan="6" className="text-center py-5">กำลังโหลดข้อมูล...</td></tr>
-              ) : data.length === 0 ? (
-                 <tr><td colSpan="6" className="text-center py-5">ไม่พบข้อมูล</td></tr>
+                 [...Array(itemsPerPage)].map((_, i) => (
+                    <tr key={i}>
+                        <td colSpan="6" className="py-4 ps-4">
+                            <div className="d-flex align-items-center placeholder-glow">
+                                <span className="placeholder col-6 rounded" style={{height: '20px'}}></span>
+                            </div>
+                        </td>
+                    </tr>
+                 ))
+              ) : filteredData.length === 0 ? (
+                 <tr><td colSpan="6" className="text-center py-5 text-dark">ไม่พบข้อมูล</td></tr>
               ) : (
-                data.map((item) => (
-                  <tr key={item.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                    <td className="py-3 ps-4"><input type="checkbox" className="form-check-input cursor-pointer" /></td>
-                    <td className="py-3 text-start">
-                        <div className="d-flex flex-column">
-                            <span className="fw-bold" style={{ color: '#000000', fontSize: '0.95rem' }}>{item.name}</span>
-                            <span className="small text-muted" style={{ fontSize: '0.85rem' }}>{item.code}</span>
-                        </div>
+                currentItems.map((item) => (
+                  <tr key={item.id} className="table-row">
+                    {/* ชื่อประเภท */}
+                    <td className="py-3 ps-4">
+                        <span className="fw-bold text-dark">{item.name}</span>
                     </td>
-                    {/* 👤 เหลือเฉพาะชื่อผู้บันทึก */}
-<td className="py-3">
-    <div className="d-flex align-items-center">
-        <span style={{ color: '#000000', fontSize: '0.9rem' }}>{item.createdBy}</span>
-    </div>
-</td>
-                    <td className="py-3 text-start" style={{ color: '#000000', fontSize: '0.9rem' }}>{item.date}</td>
+
+                    {/* รายละเอียด */}
+                    <td className="py-3">
+                        <span className="text-muted small">{item.description || '-'}</span>
+                    </td>
+
+                    {/* ผู้บันทึก */}
+                    <td className="py-3 text-dark small">
+                        {item.createdBy}
+                    </td>
+
+                    {/* วันที่ */}
+                    <td className="py-3 text-dark small">{item.date}</td>
                     
+                    {/* สถานะ */}
                     <td className="py-3 text-center">
                       {item.isActive ? (
-                        <span className="badge rounded-pill fw-medium border-0" style={{ backgroundColor: '#ecfdf5', color: '#047857', fontSize: '0.75rem', padding: '8px 16px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{width:'8px', height:'8px', backgroundColor:'#047857', borderRadius:'50%', display:'inline-block'}}></span>
+                        <span className="badge rounded-pill fw-medium border-0" style={{ backgroundColor: '#ecfdf5', color: '#059669', padding: '6px 12px' }}>
+                            <span className="me-1" style={{width:'6px', height:'6px', backgroundColor:'#059669', borderRadius:'50%', display:'inline-block'}}></span>
                             เปิดใช้งาน
                         </span>
                       ) : (
-                        <span className="badge rounded-pill fw-medium border-0" style={{ backgroundColor: '#fee2e2', color: '#991b1b', fontSize: '0.75rem', padding: '8px 16px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{width:'8px', height:'8px', backgroundColor:'#991b1b', borderRadius:'50%', display:'inline-block'}}></span>
+                        <span className="badge rounded-pill fw-medium border-0" style={{ backgroundColor: '#fef2f2', color: '#dc2626', padding: '6px 12px' }}>
+                            <span className="me-1" style={{width:'6px', height:'6px', backgroundColor:'#dc2626', borderRadius:'50%', display:'inline-block'}}></span>
                             ปิดใช้งาน
                         </span>
                       )}
                     </td>
 
+                    {/* จัดการ */}
                     <td className="py-3 text-center">
-                        <div className="btn-group">
-                          <button className="btn btn-sm btn-white border shadow-sm mx-1 rounded text-dark hover-shadow"><FontAwesomeIcon icon={faEdit} /></button>
+                        <div className="d-flex justify-content-center gap-2">
                           <button 
-                            className="btn btn-sm btn-white border shadow-sm mx-1 rounded text-danger hover-shadow"
-                            onClick={() => handleDelete(item.id)}
+                            className="btn-action edit shadow-sm"
+                            onClick={() => Swal.fire('Info', 'ฟีเจอร์แก้ไขยังไม่เปิดใช้งาน', 'info')}
+                            title="แก้ไข"
                           >
-                              <FontAwesomeIcon icon={faTrash} />
+                              <FontAwesomeIcon icon={faEdit} size="sm" />
+                          </button>
+                          <button 
+                            className="btn-action delete shadow-sm" 
+                            onClick={(e) => { e.stopPropagation(); handleDelete(item.id); }}
+                            title="ลบ"
+                          >
+                              <FontAwesomeIcon icon={faTrash} size="sm" />
                           </button>
                         </div>
                     </td>
@@ -230,39 +498,63 @@ const ExpenseTypePage = () => {
             </tbody>
           </table>
         </div>
+      </div>
+      {/* End Card */}
         
-        <div className="card-footer bg-white py-3 border-0 d-flex justify-content-between align-items-center">
-            <div style={{ color: '#000000', fontSize: '0.85rem' }}>แสดง {data.length} รายการ</div>
-            <nav>
-                <ul className="pagination pagination-sm mb-0">
-                    <li className="page-item disabled"><a className="page-link border-0 text-dark" href="#">Previous</a></li>
-                    <li className="page-item active"><a className="page-link border-0 rounded-3 shadow-sm bg-dark px-3" href="#">1</a></li>
-                    <li className="page-item"><a className="page-link border-0 text-dark" href="#">Next</a></li>
-                </ul>
-            </nav>
+      {/* Pagination (ชิดขวา & ลบข้อความแล้ว) */}
+      <div className="d-flex justify-content-end align-items-center mt-3 px-2">
+          <div className="d-flex align-items-center">
+            {/* Previous */}
+            <button 
+                className={`pagination-btn ${currentPage === 1 ? 'disabled' : ''}`} 
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 1}
+            >
+                <FontAwesomeIcon icon={faChevronLeft} style={{fontSize: '0.7rem'}}/>
+            </button>
+
+            {/* Page Numbers */}
+            {[...Array(totalPages)].map((_, i) => (
+                <button 
+                    key={i} 
+                    className={`pagination-btn ${currentPage === i + 1 ? 'active' : ''}`}
+                    onClick={() => goToPage(i + 1)}
+                >
+                    {i + 1}
+                </button>
+            ))}
+
+            {/* Next */}
+            <button 
+                className={`pagination-btn ${currentPage === totalPages || totalPages === 0 ? 'disabled' : ''}`} 
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage === totalPages || totalPages === 0}
+            >
+                <FontAwesomeIcon icon={faChevronRight} style={{fontSize: '0.7rem'}}/>
+            </button>
         </div>
       </div>
 
-      {/* --- Modal Popup (New Clean Design like ProjectTypePage) --- */}
+      {/* --- Modal Popup --- */}
       {showModal && (
         <>
-        <div className="modal-backdrop fade show" style={{backgroundColor: 'rgba(0, 0, 0, 0.5)'}}></div>
+        <div className="modal-backdrop fade show" style={{backgroundColor: 'rgba(0, 0, 0, 0.5)', backdropFilter: 'blur(4px)'}}></div>
         <div className="modal fade show d-block" tabIndex="-1">
-          <div className="modal-dialog modal-dialog-centered modal-lg" style={{maxWidth: '700px'}}>
-            <div className="modal-content border-0 shadow-lg rounded-4">
+          <div className="modal-dialog modal-dialog-centered modal-lg" style={{maxWidth: '600px'}}>
+            <div className="modal-content border-0 shadow-lg rounded-4" style={{ overflow: 'hidden' }}>
               
-              {/* Header */}
               <div className="modal-header border-bottom-0 pb-0 pt-4 px-5">
-                <h4 className="modal-title fw-bold" style={{ color: '#000000' }}>เพิ่มประเภทการเบิกจ่าย</h4>
+                <div>
+                    <h4 className="modal-title fw-bold text-dark">เพิ่มประเภทการเบิกจ่าย</h4>
+                    <span className="text-muted small">กรอกข้อมูลเพื่อสร้างประเภทการเบิกจ่ายใหม่</span>
+                </div>
                 <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
               </div>
 
-              {/* Body */}
               <div className="modal-body px-5 py-4">
                 <form>
-                  {/* ชื่อประเภท */}
                   <div className="mb-4">
-                    <label className="form-label fw-bold small" style={{ color: '#000000' }}>ชื่อประเภท</label>
+                    <label className="form-label fw-bold small text-dark">ชื่อประเภท <span className="text-danger">*</span></label>
                     <input 
                         type="text" 
                         className={`form-control form-control-lg fs-6 text-dark ${error ? 'is-invalid' : ''}`}
@@ -272,75 +564,78 @@ const ExpenseTypePage = () => {
                             setFormData({...formData, name: e.target.value});
                             if(error) setError('');
                         }}
-                        style={{ borderRadius: '8px', padding: '12px 15px', borderColor: '#e2e8f0' }}
+                        style={{ borderRadius: '8px', padding: '12px 15px', backgroundColor: '#f8fafc', borderColor: '#e2e8f0' }}
                     />
                     {error && <div className="text-danger small mt-1">{error}</div>}
                   </div>
                   
-                  {/* แถวคู่: วันที่ & ผู้บันทึก */}
                   <div className="row mb-4">
                     <div className="col-md-6">
-                      <label className="form-label fw-bold small" style={{ color: '#000000' }}>วันที่บันทึก</label>
+                      <label className="form-label fw-bold small text-dark">วันที่บันทึก</label>
                       <input 
                         type="text" 
                         className="form-control" 
                         value={new Date().toLocaleDateString('en-GB')} 
                         disabled 
-                        style={{ borderRadius: '8px', backgroundColor: '#f8fafc', color: '#64748b', borderColor: '#e2e8f0' }} 
+                        style={{ borderRadius: '8px', backgroundColor: '#f8fafc', color: '#000000', borderColor: '#e2e8f0' }} 
                       />
                     </div>
                     <div className="col-md-6">
-                      <label className="form-label fw-bold small" style={{ color: '#000000' }}>บันทึกโดย</label>
+                      <label className="form-label fw-bold small text-dark">บันทึกโดย</label>
                       <input 
                         type="text" 
                         className="form-control" 
                         value="Admin" 
                         disabled 
-                        style={{ borderRadius: '8px', backgroundColor: '#f8fafc', color: '#64748b', borderColor: '#e2e8f0' }} 
+                        style={{ borderRadius: '8px', backgroundColor: '#f8fafc', color: '#000000', borderColor: '#e2e8f0' }} 
                       />
                     </div>
                   </div>
                   
-                  {/* รายละเอียด */}
                   <div className="mb-4">
-                    <label className="form-label fw-bold small" style={{ color: '#000000' }}>รายละเอียด</label>
+                    <label className="form-label fw-bold small text-dark">รายละเอียด</label>
                     <textarea 
                         className="form-control text-dark" 
                         rows="3"
                         placeholder="ระบุรายละเอียดเพิ่มเติม..."
                         value={formData.description}
                         onChange={(e) => setFormData({...formData, description: e.target.value})}
-                        style={{ borderRadius: '8px', borderColor: '#e2e8f0' }}
+                        style={{ borderRadius: '8px', backgroundColor: '#f8fafc', borderColor: '#e2e8f0', resize: 'none' }}
                     ></textarea>
                   </div>
                   
-                  {/* Checkbox */}
-                  <div className="form-check">
+                  <div className="form-check form-switch">
                     <input 
                         className="form-check-input" 
                         type="checkbox" 
                         id="activeCheck" 
                         checked={formData.isActive}
                         onChange={(e) => setFormData({...formData, isActive: e.target.checked})}
-                        style={{ cursor: 'pointer', borderColor: '#000000' }}
+                        style={{ 
+                            cursor: 'pointer', 
+                            width: '3em', 
+                            height: '1.5em',
+                            backgroundColor: formData.isActive ? '#10b981' : undefined, 
+                            borderColor: formData.isActive ? '#10b981' : undefined
+                        }}
                     />
-                    <label className="form-check-label small fw-bold" htmlFor="activeCheck" style={{ cursor: 'pointer', color: '#000000' }}>
-                        เปิดใช้งาน
+                    <label className="form-check-label ms-2 mt-1 small fw-bold text-dark" htmlFor="activeCheck" style={{ cursor: 'pointer' }}>
+                        เปิดใช้งานสถานะ
                     </label>
                   </div>
                 </form>
               </div>
 
-              {/* Footer (มีแค่ปุ่มบันทึก อยู่ขวาสุด) */}
               <div className="modal-footer border-top-0 px-5 pb-4 pt-0">
-                 <div className="w-100 d-flex justify-content-end">
+                 <div className="w-100 d-flex justify-content-end gap-2">
+                    <button type="button" className="btn btn-light border fw-bold px-4 py-2 rounded-3" onClick={() => setShowModal(false)}>ยกเลิก</button>
                     <button 
                         type="button" 
-                        className="btn btn-dark fw-bold px-4 rounded-3" 
-                        style={{ backgroundColor: '#000000', borderColor: '#000000', padding: '10px 24px' }}
+                        className="btn btn-primary fw-bold px-4 py-2 rounded-3" 
+                        style={{ backgroundColor: '#3b82f6', borderColor: '#3b82f6', boxShadow: '0 4px 6px -1px rgba(59, 130, 246, 0.5)' }}
                         onClick={handleSave}
                     >
-                        บันทึก
+                        บันทึกข้อมูล
                     </button>
                  </div>
               </div>

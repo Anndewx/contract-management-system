@@ -12,7 +12,7 @@ namespace Contractmanagement.API.Models
 
         [Required]
         [StringLength(100)]
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
         public string? Description { get; set; }
 

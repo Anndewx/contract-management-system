@@ -16,6 +16,9 @@ import ContractDetailPage from './pages/ContractDetailPage.jsx';
 import CustomerPage from './pages/CustomerPage';
 import ContactPage from './pages/ContactPage';
 import CreateProjectPage from './pages/CreateProjectPage';
+import EditProject from './pages/EditProject';
+import CreateCustomerPage from './pages/CreateCustomerPage.jsx';
+import EditCustomerPage from './pages/EditCustomerPage';
 
 function App() {
   return (
@@ -38,6 +41,9 @@ function App() {
       <Route path="/customers" element={<Layout><CustomerPage /></Layout>} />
       <Route path="/contacts" element={<Layout><ContactPage /></Layout>} />
       <Route path="/create-project" element={<Layout><CreateProjectPage /></Layout>} />
+      <Route path="/edit-project/:id" element={<Layout><EditProject /></Layout>} />
+      <Route path="/create-customer" element={<Layout><CreateCustomerPage /></Layout>} />
+      <Route path="/edit-customer/:id" element={<Layout><EditCustomerPage /></Layout>} />
     </Routes>
   );
 }

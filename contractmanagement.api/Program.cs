@@ -45,7 +45,10 @@ builder.Services.AddAuthentication(options =>
 
 // --- 3. ตั้งค่า Swagger (ให้มีปุ่มแม่กุญแจ) ---
 builder.Services.AddControllers().AddJsonOptions(x =>
-    x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+{ // ✅ ต้องมีปีกกาเปิดตรงนี้
+    x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    x.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -98,7 +101,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseCors("AllowAll");
 // ⚠️ สำคัญ: ต้องเอา UseAuthentication ไว้ก่อน UseAuthorization
