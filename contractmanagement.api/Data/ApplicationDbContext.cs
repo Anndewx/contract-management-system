@@ -22,6 +22,8 @@ namespace Contractmanagement.API.Data
         // ส่วน Disbursement (ถูกต้องแล้ว)
         public DbSet<TblDisbursementType> Tbl_DisbursementTypes { get; set; }
         public DbSet<TblProjects> Tbl_Projects { get; set; }
+        public DbSet<Customer> Customer { get; set; }
+        public DbSet<Contact> Contact { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -34,6 +36,8 @@ namespace Contractmanagement.API.Data
             // 🚩 บรรทัดนี้ที่หายไปครับ! ต้องเติมเพื่อให้มันวิ่งไปหาตารางที่ถูกต้อง
             modelBuilder.Entity<TblDisbursementType>().ToTable("Tbl_DisbursementType");
             modelBuilder.Entity<TblProjects>().ToTable("Tbl_Projects");
+            modelBuilder.Entity<Customer>().ToTable("Customer");
+            modelBuilder.Entity<Contact>().ToTable("Contact");
         }
     }
 }

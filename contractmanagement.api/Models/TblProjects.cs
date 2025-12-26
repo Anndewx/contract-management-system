@@ -24,5 +24,9 @@ namespace Contractmanagement.API.Models
         public string? CreatedBy { get; set; }
         public DateTime? LastModifiedDate { get; set; }
         public string? LastModifiedBy { get; set; }
+        public int? CustomerId { get; set; }
+    
+        [ForeignKey("CustomerId")]
+        public virtual Customer? Customer { get; set; }
     }
 }

@@ -119,3 +119,411 @@
 ::-webkit-scrollbar-thumb:hover {
     background: #94a3b8; 
 }
+/* Dashboard.css - Clean & Premium Style */
+
+/* --- 1. Global Background --- */
+.dashboard-bg {
+    background-color: #f8fafc; /* สีพื้นหลังเทาขาว สว่าง สบายตา */
+    min-height: 100vh;
+    font-family: 'Prompt', sans-serif;
+    padding-bottom: 50px;
+}
+
+/* --- 2. Premium Card --- */
+.premium-card {
+    background: #ffffff;
+    border: 1px solid rgba(226, 232, 240, 0.8) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.premium-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.03);
+    border-color: rgba(59, 130, 246, 0.3) !important;
+}
+
+/* --- 3. Icon Box --- */
+.icon-box-premium {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+}
+
+.bg-blue-soft { background-color: #eff6ff; color: #3b82f6; }
+.bg-orange-soft { background-color: #fff7ed; color: #f97316; }
+.bg-green-soft { background-color: #f0fdf4; color: #10b981; }
+
+/* --- 4. Typography --- */
+.text-label {
+    font-size: 0.85rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.text-value {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #1e293b;
+    line-height: 1.1;
+    margin-bottom: 5px;
+}
+
+/* --- 5. List Item --- */
+.hover-list-item {
+    padding: 10px 0;
+    border-bottom: 1px dashed #f1f5f9;
+}
+.hover-list-item:last-child { border-bottom: none; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+/* ... (โค้ด Dashboard.css ส่วนบนๆ คงเดิม) ... */
+
+/* --- ✨ World-Class Control Capsule --- */
+.glass-capsule {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 
+        0 4px 6px -1px rgba(0, 0, 0, 0.02), 
+        0 10px 15px -3px rgba(0, 0, 0, 0.03),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+    border-radius: 50px;
+    padding: 6px 16px; /* ปรับ Padding ให้สมดุล */
+    display: inline-flex;
+    align-items: center;
+    gap: 16px; /* ระยะห่างระหว่าง Status กับ Date */
+    transition: all 0.3s ease;
+    height: 46px; 
+}
+
+.glass-capsule:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.08);
+}
+
+/* เส้นคั่น */
+.capsule-divider {
+    width: 1px;
+    height: 24px;
+    background-color: #cbd5e1;
+}
+
+/* --- 📅 Date Picker Styling --- */
+.date-picker-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.custom-date-input {
+    border: none;
+    background: transparent;
+    font-family: 'Prompt', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #334155;
+    cursor: pointer;
+    outline: none;
+    padding: 0;
+}
+
+.custom-date-input::-webkit-calendar-picker-indicator {
+    background: transparent;
+    bottom: 0; color: transparent; cursor: pointer; height: auto; left: 0; position: absolute; right: 0; top: 0; width: auto;
+}
+
+/* --- 🟢🔴 Status Indicators --- */
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    transition: all 0.3s;
+}
+
+/* Online State (Green Pulse) */
+.status-dot.online {
+    background-color: #10b981;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    animation: pulse-green 2s infinite;
+}
+
+/* Offline State (Red Static) */
+.status-dot.offline {
+    background-color: #ef4444;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+}
+
+@keyframes pulse-green {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 4px rgba(16, 185, 129, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+/* ... (โค้ดส่วนบนคงเดิม) ... */
+
+/* --- ✨ World-Class Control Capsule --- */
+.glass-capsule {
+    background: #ffffff; /* พื้นขาวสะอาด */
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+    border-radius: 50px;
+    padding: 4px 6px 4px 16px; /* จัดระยะห่าง */
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    height: 44px;
+    transition: all 0.3s ease;
+    position: relative; /* สำคัญ */
+}
+
+.glass-capsule:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+    border-color: #cbd5e1;
+}
+
+/* เส้นคั่นแนวตั้ง (Divider) */
+.capsule-divider {
+    width: 1px;
+    height: 24px;
+    background-color: #e2e8f0;
+}
+
+/* --- 📅 Date Picker Wrapper (ส่วนนี้ทำให้กดเลือกได้) --- */
+.date-picker-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.date-picker-wrapper:hover {
+    background-color: #f8fafc; /* เปลี่ยนสีพื้นหลังเมื่อชี้ */
+}
+
+/* ข้อความวันที่ที่โชว์ (เช่น Today) */
+.date-display-text {
+    font-family: 'Prompt', sans-serif;
+    font-size: 0.95rem; /* ใหญ่ขึ้นนิดนึงให้อ่านง่าย */
+    font-weight: 600;
+    color: #1e293b;
+    white-space: nowrap;
+    pointer-events: none; /* ให้คลิกทะลุไปโดน Input */
+}
+
+/* 🛠️ กลไกซ่อนปฏิทิน (พระเอกของงาน) */
+.hidden-date-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0; /* ซ่อนไม่ให้ตาเห็น */
+    cursor: pointer; /* เมาส์เป็นรูปมือ */
+    z-index: 10; /* อยู่ชั้นบนสุดเพื่อให้กดโดน */
+}
+
+/* --- Status Indicators --- */
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: default;
+    padding-right: 4px;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.status-dot.online {
+    background-color: #10b981;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+.status-dot.offline {
+    background-color: #ef4444;
+}
+
+.status-text {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #334155;
+    text-transform: uppercase;
+}
+/* Dashboard.css - Premium & Modern Style */
+
+/* --- 1. Global Background --- */
+.dashboard-bg {
+    background-color: #f1f5f9;
+    min-height: 100vh;
+    font-family: 'Prompt', sans-serif;
+    padding-bottom: 50px;
+}
+
+/* --- 2. Premium Card --- */
+.premium-card {
+    background: #ffffff;
+    border: none !important;
+    border-radius: 20px !important;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.03), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+}
+
+.premium-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border-bottom: 4px solid #3b82f6;
+}
+
+/* --- 3. Icon Box --- */
+.icon-box-premium {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    transition: transform 0.3s ease;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2);
+}
+
+.premium-card:hover .icon-box-premium {
+    transform: rotate(10deg) scale(1.1);
+}
+
+.bg-blue-soft { background-color: #eff6ff; color: #3b82f6; }
+.bg-orange-soft { background-color: #fff7ed; color: #f97316; }
+.bg-green-soft { background-color: #f0fdf4; color: #10b981; }
+.bg-purple-soft { background-color: #eef2ff; color: #6366f1; }
+
+/* --- 4. Text & Typography --- */
+.text-label {
+    font-size: 0.9rem;
+    color: #64748b;
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+.text-value {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #1e293b;
+    letter-spacing: -1px;
+    line-height: 1.2;
+}
+
+/* --- 5. Lists & Tables --- */
+.hover-list-item {
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 8px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.hover-list-item:hover {
+    background-color: #f8fafc;
+    border-color: #e2e8f0;
+    transform: translateX(5px);
+    cursor: pointer;
+}
+
+.hover-table-row { transition: all 0.2s ease; }
+.hover-table-row:hover {
+    background-color: #f8fafc;
+    transform: scale(1.02);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    position: relative;
+    z-index: 10;
+}
+
+.border-bottom-dash { border-bottom: 1px dashed #e2e8f0 !important; }
+
+/* --- ✨ World-Class Date Capsule (เหลือแค่ปุ่มเดียว) --- */
+.glass-capsule {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+    border-radius: 50px;
+    padding: 4px; 
+    display: inline-flex;
+    align-items: center;
+    height: 44px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.glass-capsule:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+    border-color: #cbd5e1;
+}
+
+/* --- 📅 Date Picker Wrapper --- */
+.date-picker-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 16px; 
+    border-radius: 50px;
+    cursor: pointer;
+    background-color: transparent;
+    transition: background 0.2s;
+}
+
+.date-picker-wrapper:hover {
+    background-color: #f8fafc;
+}
+
+.date-display-text {
+    font-family: 'Prompt', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1e293b;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.hidden-date-input {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    opacity: 0; cursor: pointer; z-index: 10;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
