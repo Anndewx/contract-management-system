@@ -19,6 +19,7 @@ import CreateProjectPage from './pages/CreateProjectPage';
 import EditProject from './pages/EditProject';
 import CreateCustomerPage from './pages/CreateCustomerPage.jsx';
 import EditCustomerPage from './pages/EditCustomerPage';
+import EditContractPage from './pages/EditContractPage';
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
     
       <Route path="/contracts" element={<Layout><ContractsPage /></Layout>} />
       <Route path="/contract/detail/:id" element={<Layout><ContractDetailPage /></Layout>} />
+      <Route path="/contract/edit/:id" element={<Layout><EditContractPage /></Layout>} />
       
       {/* Route สำหรับหน้าลูกค้า */}
       <Route path="/customers" element={<Layout><CustomerPage /></Layout>} />

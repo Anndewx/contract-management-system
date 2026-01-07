@@ -165,25 +165,28 @@ const Layout = ({ children }) => {
             {/* ⬅️ ฝั่งซ้าย: ปุ่มเมนู Hamburger (ลบปฏิทินออกแล้ว) */}
             <div className="d-flex align-items-center gap-3">
                 <button 
-                    className="btn border-0 shadow-sm rounded-circle d-flex align-items-center justify-content-center" 
+                    className="btn border-0 d-flex align-items-center justify-content-center" 
                     onClick={() => setSidebarOpen(!isSidebarOpen)}
                     style={{ 
                         width: '40px', 
                         height: '40px', 
-                        transition: 'all 0.2s',
-                        backgroundColor: '#eff6ff',  
-                        color: '#3b82f6',            
+                        borderRadius: '10px',
+                        transition: 'all 0.2s ease',
+                        backgroundColor: 'transparent',  
+                        color: '#334155',            
                     }}
                     onMouseOver={(e) => {
-                        e.currentTarget.style.backgroundColor = '#3b82f6';
-                        e.currentTarget.style.color = '#ffffff';
+                        e.currentTarget.style.backgroundColor = '#f1f5f9';
+                        e.currentTarget.style.color = '#0f172a';
+                        e.currentTarget.style.transform = 'scale(1.05)';
                     }}
                     onMouseOut={(e) => {
-                        e.currentTarget.style.backgroundColor = '#eff6ff';
-                        e.currentTarget.style.color = '#3b82f6';
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                        e.currentTarget.style.color = '#334155';
+                        e.currentTarget.style.transform = 'scale(1)';
                     }}
                 >
-                    <FontAwesomeIcon icon={faBars} style={{ fontSize: '1.2rem' }} />
+                    <FontAwesomeIcon icon={faBars} style={{ fontSize: '1.25rem' }} />
                 </button>
             </div>
 

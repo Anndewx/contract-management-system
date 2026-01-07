@@ -11,10 +11,10 @@ import Swal from 'sweetalert2';
 const API_BASE_URL = "http://localhost:5056/api";
 
 const MOCK_EMPLOYEES = [
-    { id: 1, name: 'วิชิต ทาก้อน', role: 'Project Manager' },
-    { id: 2, name: 'ชมพูนุช จะตะกานนท์', role: 'Co-ordinator' },
-    { id: 3, name: 'ณัฐพล ใจดี', role: 'Developer' },
-    { id: 4, name: 'สมชาย ขายเก่ง', role: 'Sales' }
+    { id: 1, name: 'พี่นัทตี้', role: 'Lead', image: '/img/team/PNut.jpg' },
+    { id: 2, name: 'พี่เขียว', role: 'Lead', image: 'https://randomuser.me/api/portraits/men/2.jpg' },
+    { id: 3, name: 'พี่อาร์ม', role: 'Senior', image: '/img/team/PArm.jpg' },
+    { id: 4, name: 'พี่มด', role: 'Doctor', image: '/img/team/PMod.jpg' }
 ];
 
 const CreateProjectPage = () => {
@@ -216,49 +216,112 @@ const CreateProjectPage = () => {
   };
 
   const isInvalid = (fieldValue) => isSubmitted && !fieldValue;
-  const whiteInputStyle = { backgroundColor: '#ffffff', borderColor: '#dee2e6' };
+  
+  // --- Clean & Readable Styles ---
+  const cleanStyles = `
+    .form-control-clean, .form-select-clean {
+        background-color: #ffffff; 
+        border: 1px solid #e2e8f0; 
+        border-radius: 8px;
+        padding: 12px 16px; 
+        font-size: 1rem; 
+        color: #334155; 
+        transition: all 0.2s ease;
+        height: 48px; /* เพิ่มความสูงให้อ่านง่าย */
+    }
+    .form-control-clean:focus, .form-select-clean:focus {
+        border-color: #3b82f6; 
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); 
+        outline: none;
+    }
+    .form-label-clean {
+        font-weight: 600; 
+        color: #475569; 
+        font-size: 0.95rem; 
+        margin-bottom: 8px;
+        display: block;
+    }
+    textarea.form-control-clean {
+        height: auto;
+        line-height: 1.6;
+    }
+    
+    /* --- Button Styles --- */
+    .btn-clean-primary {
+        background-color: #3b82f6; 
+        border: none; 
+        border-radius: 8px; 
+        padding: 10px 32px;
+        font-weight: 600; 
+        color: white;
+        box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.4); 
+        transition: all 0.2s ease;
+    }
+    .btn-clean-primary:hover { 
+        background-color: #2563eb; 
+        color: white;
+        transform: translateY(-1px); 
+        box-shadow: 0 6px 8px -1px rgba(59, 130, 246, 0.5);
+    }
+    .btn-clean-cancel {
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 10px 24px;
+        font-weight: 600; 
+        color: #475569;
+        transition: all 0.2s ease;
+    }
+    .btn-clean-cancel:hover {
+        background-color: #f8fafc;
+        color: #1e293b;
+        border-color: #cbd5e1;
+        transform: translateY(-1px);
+    }
+  `;
 
   return (
-    <div className="container-fluid px-4 py-4" style={{ backgroundColor: '#f9fafb', minHeight: '100vh' }}>
+    <div className="container-fluid px-4 py-4" style={{ backgroundColor: '#f9fafb', minHeight: '100vh', fontFamily: "'Inter', 'Noto Sans Thai', sans-serif" }}>
+      <style>{cleanStyles}</style>
       
       <div className="d-flex align-items-center mb-4">
         <button className="btn btn-link text-dark me-3 p-0" onClick={() => navigate('/projects')}>
             <FontAwesomeIcon icon={faArrowLeft} size="lg" />
         </button>
-        <div><h3 className="fw-bold mb-1">สร้างโครงการ</h3></div>
+        <div><h3 className="fw-bold mb-1 text-dark">สร้างโครงการ</h3></div>
       </div>
 
-      <div className="card border-0 shadow-sm rounded-3 bg-white p-4">
+      <div className="card border-0 shadow-sm rounded-4 bg-white p-4 p-md-5">
         <form className="row g-4">
             
             <div className="col-12">
-                <label className="form-label fw-bold small text-muted">ชื่อโครงการ <span className="text-danger">*</span></label>
-                <input type="text" className={`form-control ${isInvalid(formData.title) ? 'is-invalid' : ''}`} name="title" value={formData.title} onChange={handleChange} placeholder="ระบุชื่อโครงการ..." style={whiteInputStyle}/>
+                <label className="form-label-clean">ชื่อโครงการ <span className="text-danger">*</span></label>
+                <input type="text" className={`form-control form-control-clean ${isInvalid(formData.title) ? 'is-invalid' : ''}`} name="title" value={formData.title} onChange={handleChange} placeholder="ระบุชื่อโครงการ..." />
             </div>
 
             <div className="col-md-6">
-                <label className="form-label fw-bold small text-muted">เลขที่โครงการ <span className="text-danger">*</span></label>
-                <input type="text" className={`form-control ${isInvalid(formData.contractNumber) ? 'is-invalid' : ''}`} name="contractNumber" value={formData.contractNumber} onChange={handleChange} placeholder="เช่น 2024-063" />
+                <label className="form-label-clean">เลขที่โครงการ <span className="text-danger">*</span></label>
+                <input type="text" className={`form-control form-control-clean ${isInvalid(formData.contractNumber) ? 'is-invalid' : ''}`} name="contractNumber" value={formData.contractNumber} onChange={handleChange} placeholder="เช่น 2024-063" />
             </div>
             <div className="col-md-6">
-                <label className="form-label fw-bold small text-muted">ประเภทโครงการ <span className="text-danger">*</span></label>
-                <select className={`form-select ${isInvalid(formData.projectTypeId) ? 'is-invalid' : ''}`} name="projectTypeId" value={formData.projectTypeId} onChange={handleChange}>
+                <label className="form-label-clean">ประเภทโครงการ <span className="text-danger">*</span></label>
+                <select className={`form-select form-select-clean ${isInvalid(formData.projectTypeId) ? 'is-invalid' : ''}`} name="projectTypeId" value={formData.projectTypeId} onChange={handleChange}>
                     <option value="">เลือกประเภท...</option>
                     {projectTypes.map(type => <option key={type.id} value={type.id}>{type.name}</option>)}
                 </select>
             </div>
 
             <div className="col-md-6">
-                <label className="form-label fw-bold small text-muted">วิธีการจัดหา <span className="text-danger">*</span></label>
-                <select className="form-select" name="procurementMethod" value={formData.procurementMethod} onChange={handleChange}>
+                <label className="form-label-clean">วิธีการจัดหา <span className="text-danger">*</span></label>
+                <select className="form-select form-select-clean" name="procurementMethod" value={formData.procurementMethod} onChange={handleChange}>
                     <option value="คัดเลือก">คัดเลือก</option>
                     <option value="เฉพาะเจาะจง">เฉพาะเจาะจง</option>
                     <option value="ประกวดราคา">ประกวดราคา</option>
                 </select>
             </div>
             <div className="col-md-6">
-                <label className="form-label fw-bold small text-muted">วิธีการพิจารณา <span className="text-danger">*</span></label>
-                <select className="form-select" name="evaluationMethod" value={formData.evaluationMethod} onChange={handleChange}>
+                <label className="form-label-clean">วิธีการพิจารณา <span className="text-danger">*</span></label>
+                <select className="form-select form-select-clean" name="evaluationMethod" value={formData.evaluationMethod} onChange={handleChange}>
                     <option value="ราคาต่ำสุด">ราคาต่ำสุด</option>
                     <option value="เกณฑ์คุณภาพ">เกณฑ์คุณภาพ</option>
                 </select>
@@ -266,9 +329,9 @@ const CreateProjectPage = () => {
 
             {/* ✅ 1. ช่องชื่อหน่วยงาน: เลือกผู้ติดต่อ (David) */}
             <div className="col-12">
-                <label className="form-label fw-bold small text-muted">ชื่อหน่วยงาน (ผู้ติดต่อ) <span className="text-danger">*</span></label>
+                <label className="form-label-clean">ลูกค้า (ผู้ติดต่อ) <span className="text-danger">*</span></label>
                 <select 
-                    className={`form-select ${isInvalid(formData.agency) ? 'is-invalid' : ''}`} 
+                    className={`form-select form-select-clean ${isInvalid(formData.agency) ? 'is-invalid' : ''}`} 
                     onChange={handleAgencyChange}
                     defaultValue=""
                     style={{cursor: 'pointer'}}
@@ -283,15 +346,15 @@ const CreateProjectPage = () => {
             </div>
 
             <div className="col-md-6">
-                <label className="form-label fw-bold small text-muted">ปีงบประมาณ <span className="text-danger">*</span></label>
-                <select className="form-select" name="fiscalYear" value={formData.fiscalYear} onChange={handleChange}>
+                <label className="form-label-clean">ปีงบประมาณ <span className="text-danger">*</span></label>
+                <select className="form-select form-select-clean" name="fiscalYear" value={formData.fiscalYear} onChange={handleChange}>
                     <option value="2568">2568</option>
                     <option value="2567">2567</option>
                 </select>
             </div>
             <div className="col-md-6">
-                <label className="form-label fw-bold small text-muted">สถานะ <span className="text-danger">*</span></label>
-                <select className="form-select" name="status" value={formData.status} onChange={handleChange}>
+                <label className="form-label-clean">สถานะ <span className="text-danger">*</span></label>
+                <select className="form-select form-select-clean" name="status" value={formData.status} onChange={handleChange}>
                     <option value="จัดทำโครงการ">จัดทำโครงการ</option>
                     <option value="ร่างTOR">ร่าง TOR</option>
                     <option value="ยื่นข้อเสนอ">ยื่นข้อเสนอ</option>
@@ -300,19 +363,19 @@ const CreateProjectPage = () => {
             </div>
 
             <div className="col-md-6">
-                <label className="form-label fw-bold small text-muted">มูลค่าโครงการ (รวม Vat) <span className="text-danger">*</span></label>
-                <input type="number" className={`form-control ${isInvalid(formData.amount) ? 'is-invalid' : ''}`} name="amount" value={formData.amount} onChange={handleChange} placeholder="0.00" style={whiteInputStyle} />
+                <label className="form-label-clean">มูลค่าโครงการ (รวม Vat) <span className="text-danger">*</span></label>
+                <input type="number" className={`form-control form-control-clean ${isInvalid(formData.amount) ? 'is-invalid' : ''}`} name="amount" value={formData.amount} onChange={handleChange} placeholder="0.00" />
             </div>
             
             {/* ✅ 2. ช่องบริษัท: เลือกบริษัท (Inno) */}
             <div className="col-md-6">
-                <label className="form-label fw-bold small text-muted">บริษัท (ผู้รับผิดชอบ) <span className="text-danger">*</span></label>
+                <label className="form-label-clean">บริษัท (หน่วยงาน) <span className="text-danger">*</span></label>
                 <select 
-                    className={`form-select ${isInvalid(formData.company) ? 'is-invalid' : ''}`} 
+                    className={`form-select form-select-clean ${isInvalid(formData.company) ? 'is-invalid' : ''}`} 
                     name="company" 
                     value={formData.company} 
                     onChange={handleCompanyChange}
-                    style={{...whiteInputStyle, cursor: 'pointer'}}
+                    style={{cursor: 'pointer'}}
                 >
                     <option value="">เลือกบริษัท...</option>
                     {customers.map((comp) => (
@@ -323,15 +386,15 @@ const CreateProjectPage = () => {
 
             {/* --- Grey Box Area --- */}
             <div className="col-12">
-                <div className="bg-light p-4 rounded border">
+                <div className="p-4 rounded border" style={{ backgroundColor: '#f8fafc' }}>
                     <div className="row g-4">
                         <div className="col-md-6 d-flex flex-column">
-                            <label className="form-label fw-bold small text-muted">รายละเอียด</label>
-                            <textarea className="form-control bg-white mb-4" rows="5" name="description" placeholder="เตรียมเอกสารยื่นงาน..." value={formData.description} onChange={handleChange} style={{resize: 'none'}}></textarea>
+                            <label className="form-label-clean">รายละเอียด</label>
+                            <textarea className="form-control form-control-clean mb-4" rows="5" name="description" placeholder="เตรียมเอกสารยื่นงาน..." value={formData.description} onChange={handleChange} style={{resize: 'none'}}></textarea>
                             
                             <div className="mt-auto">
                                 <div className="d-flex align-items-center mb-2">
-                                    <label className="form-label fw-bold small text-muted mb-0 me-2">Attachments</label>
+                                    <label className="form-label-clean mb-0 me-2">Attachments</label>
                                     {attachments.length > 0 && <span className="badge bg-warning text-dark rounded-pill">{attachments.length} files</span>}
                                 </div>
                                 <div className="mb-2">
@@ -371,16 +434,16 @@ const CreateProjectPage = () => {
                         </div>
 
                         <div className="col-md-6">
-                            <label className="form-label fw-bold small text-muted">ผู้รับผิดชอบ</label>
+                            <label className="form-label-clean">ผู้รับผิดชอบ</label>
                             <div className="">
                                 <div className="input-group mb-3">
-                                    <select className="form-select bg-white" value={selectedMemberId} onChange={(e) => setSelectedMemberId(e.target.value)}>
-                                        <option value="">เลือกรายชื่อ...</option>
+                                    <select className="form-select form-select-clean" value={selectedMemberId} onChange={(e) => setSelectedMemberId(e.target.value)}>
+                                        <option value="" hidden>เลือกรายชื่อ...</option>
                                         {MOCK_EMPLOYEES.map(emp => (
                                             <option key={emp.id} value={emp.id}>{emp.name} ({emp.role})</option>
                                         ))}
                                     </select>
-                                    <button className="btn btn-outline-dark bg-white" type="button" onClick={handleAddMember}>
+                                    <button className="btn text-white" type="button" onClick={handleAddMember} style={{backgroundColor: '#334155', borderColor: '#334155', height: '48px', borderTopRightRadius: '8px', borderBottomRightRadius: '8px'}}>
                                         <FontAwesomeIcon icon={faPlus}/>
                                     </button>
                                 </div>
@@ -388,9 +451,13 @@ const CreateProjectPage = () => {
                                     {teamMembers.map((member) => (
                                         <div key={member.id} className="d-flex align-items-center justify-content-between p-2 mb-2 border rounded bg-white shadow-sm">
                                             <div className="d-flex align-items-center">
-                                                <div className="bg-dark rounded-circle me-3 d-flex align-items-center justify-content-center text-white small" style={{width:35, height:35}}>
-                                                    <FontAwesomeIcon icon={faUser}/>
-                                                </div>
+                                                {member.image ? (
+                                                    <img src={member.image} alt={member.name} className="rounded-circle me-3" style={{width:35, height:35, objectFit: 'cover'}} />
+                                                ) : (
+                                                    <div className="bg-dark rounded-circle me-3 d-flex align-items-center justify-content-center text-white small" style={{width:35, height:35}}>
+                                                        <FontAwesomeIcon icon={faUser}/>
+                                                    </div>
+                                                )}
                                                 <div style={{lineHeight: '1.2'}}>
                                                     <div className="fw-bold text-dark" style={{fontSize: '0.85rem'}}>{member.name}</div>
                                                     <div className="text-muted" style={{fontSize: '0.75rem'}}>{member.role}</div>
@@ -416,9 +483,9 @@ const CreateProjectPage = () => {
                         กรุณากรอกข้อมูลให้ครบถ้วน
                     </div>
                 )}
-                <button type="button" className="btn btn-white border fw-bold px-4 py-2" onClick={() => navigate('/projects')}>ยกเลิก</button>
-                <button type="button" className="btn btn-primary fw-bold px-5 py-2" style={{ backgroundColor: '#3b82f6', border:'none' }} onClick={handleInitialSave}>
-                   บันทึก
+                <button type="button" className="btn btn-clean-cancel" onClick={() => navigate('/projects')}>ยกเลิก</button>
+                <button type="button" className="btn btn-clean-primary" onClick={handleInitialSave}>
+                   <FontAwesomeIcon icon={faCheckCircle} className="me-2"/> บันทึก
                 </button>
              </div>
         </form>

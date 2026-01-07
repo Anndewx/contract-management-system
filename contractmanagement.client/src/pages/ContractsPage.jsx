@@ -127,11 +127,7 @@ const ContractsPage = () => {
 
   const handleEdit = (e, item) => {
     e.stopPropagation(); 
-    Swal.fire({
-        title: 'แก้ไขสัญญา',
-        text: `กำลังเปิดหน้าแก้ไข: ${item.projectName}`,
-        icon: 'info'
-    });
+    navigate(`/contract/edit/${item.id}`);
   };
 
   // --- Status Badge Renderer ---
@@ -141,7 +137,7 @@ const ContractsPage = () => {
     if (status === 'ดำเนินโครงการ') {
       config = { bg: '#fffbeb', color: '#b45309', dot: '#f59e0b' }; 
     } else if (status === 'ปิดโครงการ') {
-      config = { bg: '#eff6ff', color: '#1d4ed8', dot: '#3b82f6' }; 
+      config = { bg: '#fef2f2', color: '#b91c1c', dot: '#ef4444' }; 
     }
 
     return (
@@ -256,6 +252,23 @@ const ContractsPage = () => {
         background-color: #f8fafc;
         color: #000;
     }
+    .btn-clean {
+        background-color: #3b82f6;
+        border: none;
+        color: white;
+        transition: all 0.2s ease-in-out;
+        box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+    }
+    .btn-clean:hover {
+        background-color: #2563eb;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+        color: white !important;
+    }
+    .btn-clean:active {
+        transform: translateY(0);
+        box-shadow: 0 1px 2px rgba(59, 130, 246, 0.2);
+    }
   `;
 
   return (
@@ -336,9 +349,9 @@ const ContractsPage = () => {
               />
           </div>
 
-          <button className="btn btn-primary fw-bold shadow-sm px-4" 
+          <button className="btn btn-clean fw-bold px-4" 
                   onClick={handleSearchClick}
-                  style={{ backgroundColor: '#3b82f6', borderColor: '#3b82f6', borderRadius: '10px', height: '42px' }}>
+                  style={{ borderRadius: '10px', height: '42px' }}>
               ค้นหา
           </button>
 
@@ -355,9 +368,9 @@ const ContractsPage = () => {
                 <th className="py-4 text-start border-0" style={{ width: '25%' }}>ชื่อโครงการ</th>
                 <th className="py-4 text-end border-0 pe-4" style={{ width: '12%' }}>มูลค่าโครงการ</th>
                 <th className="py-4 text-center border-0" style={{ width: '13%' }}>สถานะงาน</th>
-                <th className="py-4 text-start border-0 ps-4" style={{ width: '15%' }}>ชื่อลูกค้า</th>
-                <th className="py-4 text-start border-0" style={{ width: '10%' }}>บริษัท</th>
-                <th className="py-4 text-center border-0" style={{ width: '10%' }}>จัดการ</th>
+                <th className="py-4 text-center border-0" style={{ width: '15%' }}>ชื่อลูกค้า</th>
+                <th className="py-4 text-center border-0" style={{ width: '10%' }}>บริษัท</th>
+                <th className="py-4 text-center border-0" style={{ width: '10%' }}>ส่วนจัดการ</th>
               </tr>
             </thead>
             <tbody>
@@ -387,10 +400,10 @@ const ContractsPage = () => {
                   <td className="py-3 text-center">{renderStatusBadge(item.status)}</td>
                   
                   {/* แสดงชื่อผู้ติดต่อ */}
-                  <td className="py-3 text-start text-dark ps-4">{item.customer}</td>
+                  <td className="py-3 text-center text-dark">{item.customer}</td>
                   
                   {/* แสดงชื่อบริษัท */}
-                  <td className="py-3 text-start text-dark">{item.company}</td>
+                  <td className="py-3 text-center text-dark">{item.company}</td>
                   
                   <td className="py-3 text-center">
                         <div className="d-flex justify-content-center">

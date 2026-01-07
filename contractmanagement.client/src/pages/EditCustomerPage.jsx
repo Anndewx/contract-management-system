@@ -28,6 +28,9 @@ const EditCustomerPage = () => {
   const [contacts, setContacts] = useState([]);
   const [editingContactId, setEditingContactId] = useState(null); 
 
+  // --- Project State ---
+  const [projects, setProjects] = useState([]);
+
   // --- Contact Modal State ---
   const [contactForm, setContactForm] = useState({
       firstName: '', lastName: '', phone: '', email: '', details: ''
@@ -39,7 +42,7 @@ const EditCustomerPage = () => {
   useEffect(() => {
       const fetchData = async () => {
           try {
-              // ดึงข้อมูลลูกค้า
+              // 1.1 ดึงข้อมูลลูกค้า
               const res = await fetch(`${API_BASE_URL}/Customers/${id}`);
               if (!res.ok) throw new Error("Customer not found");
               const data = await res.json();
@@ -57,7 +60,7 @@ const EditCustomerPage = () => {
                   zipcode: data.zipcode || data.Zipcode || ''
               });
 
-              // ดึงข้อมูลผู้ติดต่อ
+              // 1.2 ดึงข้อมูลผู้ติดต่อ
               if (data.contacts && Array.isArray(data.contacts)) {
                   setContacts(data.contacts);
               } else {
@@ -76,6 +79,15 @@ const EditCustomerPage = () => {
                       })));
                   }
               }
+
+              // 1.3 ดึงข้อมูลโปรเจกต์
+              const resProjects = await fetch(`${API_BASE_URL}/Projects`);
+              if (resProjects.ok) {
+                  const allProjects = await resProjects.json();
+                  const myProjects = allProjects.filter(p => p.customerId == id || p.CustomerId == id);
+                  setProjects(myProjects);
+              }
+
           } catch (error) {
               console.error("Error:", error);
               Swal.fire('Error', 'ไม่พบข้อมูลลูกค้า', 'error').then(() => navigate('/customers'));
@@ -95,38 +107,31 @@ const EditCustomerPage = () => {
     }
   };
 
-  // ✅ ฟังก์ชันบันทึก (แก้ไขให้ส่ง key ตัวใหญ่ตรงกับ C# Model)
+  // ✅ ฟังก์ชันบันทึกหลัก (ทั้งเพิ่มและแก้ไขผู้ติดต่อจะส่งผ่านทางนี้)
   const handleSave = async () => {
     if (!formData.name) {
         Swal.fire('แจ้งเตือน', 'กรุณาระบุชื่อบริษัท/หน่วยงาน', 'warning');
         return;
     }
 
-    const contactsPayload = contacts.map(c => ({
-        // ถ้า ID สั้น (<10) คือของเดิม ให้ส่ง ID ไป update
-        // ถ้า ID ยาว (Timestamp) คือของใหม่ ให้ส่ง 0 ไป insert
-        Id: (String(c.id).length < 10) ? c.id : 0, 
-        FirstName: c.firstName,
-        LastName: c.lastName,
-        Phone: c.phone,
-        Email: c.email,
-        Details: c.details,
-        CustomerId: parseInt(id)
-    }));
+    // เตรียม Payload สำหรับผู้ติดต่อ
+    const contactsPayload = contacts.map(c => {
+        // เช็คว่า ID เป็นตัวเลขจริงหรือไม่ (ถ้าเป็น Timestamp ยาวๆ แสดงว่าเป็นของใหม่ ให้ส่ง 0)
+        const isNewContact = String(c.id).length > 10; 
+        return {
+            Id: isNewContact ? 0 : c.id, // ถ้าใหม่ส่ง 0, ถ้าเก่าส่ง ID เดิม
+            FirstName: c.firstName,
+            LastName: c.lastName,
+            Phone: c.phone,
+            Email: c.email,
+            Details: c.details,
+            CustomerId: parseInt(id)
+        };
+    });
 
-    // สร้าง Payload ใหม่ โดยใช้ Key ตัวพิมพ์ใหญ่ (PascalCase) ให้ตรงกับ Backend ชัวร์ๆ
     const payload = { 
         Id: parseInt(id),
-        Name: formData.name,
-        TaxId: formData.taxId,
-        Email: formData.email,
-        Phone: formData.phone,
-        Website: formData.website,
-        Address: formData.address,
-        Province: formData.province,
-        District: formData.district,
-        SubDistrict: formData.subDistrict,
-        Zipcode: formData.zipcode,
+        ...formData, // Spread ข้อมูลบริษัท
         Contacts: contactsPayload 
     };
 
@@ -138,12 +143,19 @@ const EditCustomerPage = () => {
         });
 
         if (response.ok) {
-            Swal.fire({ icon: 'success', title: 'บันทึกการแก้ไขสำเร็จ', showConfirmButton: false, timer: 1500 });
-            navigate('/customers'); 
+            Swal.fire({ 
+                icon: 'success', 
+                title: 'บันทึกข้อมูลสำเร็จ', 
+                text: 'ข้อมูลลูกค้าและผู้ติดต่อถูกบันทึกแล้ว',
+                showConfirmButton: false, 
+                timer: 1500 
+            });
+            // รีโหลดข้อมูลใหม่เพื่อให้ได้ ID จริงจาก DB กลับมาแสดง
+            window.location.reload(); 
         } else {
-            const err = await response.text();
-            console.error("Server Error:", err);
-            Swal.fire('Error', 'บันทึกไม่สำเร็จ กรุณาตรวจสอบข้อมูล', 'error');
+            const err = await response.json().catch(()=>({}));
+            console.error(err);
+            Swal.fire('Error', `บันทึกไม่สำเร็จ`, 'error');
         }
     } catch (error) {
         console.error(error);
@@ -178,6 +190,7 @@ const EditCustomerPage = () => {
 
   // --- Contact Logic ---
 
+  // เตรียมข้อมูลเพื่อแก้ไข
   const handleEditContactClick = (contact) => {
       setContactForm({
           firstName: contact.firstName || '',
@@ -191,21 +204,31 @@ const EditCustomerPage = () => {
       setShowContactModal(true); 
   };
 
+  // ✅ เพิ่ม/แก้ไข ผู้ติดต่อใน State (หน้าเว็บ)
   const handleSaveContactToList = () => {
     if (!contactForm.firstName) return Swal.fire('แจ้งเตือน', 'ระบุชื่อผู้ติดต่อ', 'warning');
     
     if (editingContactId) {
+        // กรณีแก้ไข: หา ID เดิมแล้วแทนที่ข้อมูลใหม่
         setContacts(prev => prev.map(c => 
             c.id === editingContactId 
             ? { ...c, ...contactForm, attachments: contactAttachments } 
             : c
         ));
     } else {
-        const newContact = { ...contactForm, id: Date.now(), attachments: contactAttachments };
+        // กรณีเพิ่มใหม่: สร้าง ID ชั่วคราว (Timestamp) เพื่อให้แสดงผลได้ก่อน
+        const newContact = { 
+            ...contactForm, 
+            id: Date.now(), // ID ชั่วคราว
+            attachments: contactAttachments 
+        };
         setContacts(prev => [...prev, newContact]);
     }
     
     handleCloseModal();
+    // แจ้งเตือนเล็กน้อยเพื่อให้ User รู้ว่าต้องกดบันทึกใหญ่อีกที
+    const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+    Toast.fire({ icon: 'info', title: 'เพิ่มรายการแล้ว (กดบันทึกด้านล่างเพื่อยืนยัน)' });
   };
 
   const handleCloseModal = () => {
@@ -234,6 +257,58 @@ const EditCustomerPage = () => {
       return { icon: faFileAlt, color: '#6b7280', bg: '#f3f4f6' };
   };
 
+  // --- Status Badge Renderer (Unified) ---
+  const renderStatusBadge = (status) => {
+    let config = { bg: '#f3f4f6', color: '#1f2937', dot: '#9ca3af' }; // Default Gray
+
+    // Project Statuses (Based on Image)
+    if (status === 'จัดทำโครงการ') {
+        config = { bg: '#eff6ff', color: '#1d4ed8', dot: '#3b82f6' }; // Blue
+    } else if (status === 'ร่างTOR') {
+        config = { bg: '#fff7ed', color: '#c2410c', dot: '#f97316' }; // Orange
+    } else if (status === 'ยื่นข้อเสนอ') {
+        config = { bg: '#f3e8ff', color: '#7e22ce', dot: '#a855f7' }; // Purple
+    } else if (status === 'ดำเนินงาน') {
+        config = { bg: '#ecfdf5', color: '#047857', dot: '#10b981' }; // Green
+    }
+    // Legacy / Other Project Statuses
+    else if (status === 'ดำเนินโครงการ' || status === 'On Process') {
+      config = { bg: '#fffbeb', color: '#b45309', dot: '#f59e0b' }; // Orange/Yellow
+    } else if (status === 'ปิดโครงการ' || status === 'Completed') {
+      config = { bg: '#eff6ff', color: '#1d4ed8', dot: '#3b82f6' }; // Blue
+    } 
+    // Quotation Statuses
+    else if (status === 'อนุมัติแล้ว' || status === 'Approved') {
+        config = { bg: '#ecfdf5', color: '#047857', dot: '#10b981' }; // Green
+    } else if (status === 'รออนุมัติ' || status === 'Pending') {
+        config = { bg: '#fffbeb', color: '#b45309', dot: '#f59e0b' }; // Orange
+    }
+    // Invoice Statuses
+    else if (status === 'ค้างชำระ' || status === 'Overdue') {
+        config = { bg: '#fef2f2', color: '#b91c1c', dot: '#ef4444' }; // Red
+    } else if (status === 'ชำระแล้ว' || status === 'Paid') {
+        config = { bg: '#ecfdf5', color: '#047857', dot: '#10b981' }; // Green
+    }
+
+    return (
+      <span className="badge rounded-pill fw-medium border-0 shadow-sm"
+          style={{ 
+            backgroundColor: config.bg, 
+            color: config.color, 
+            fontSize: '0.85rem', 
+            padding: '8px 16px', 
+            display: 'inline-flex', 
+            alignItems: 'center', 
+            gap: '8px',
+            minWidth: '110px', 
+            justifyContent: 'center'
+          }}>
+          <span style={{width:'8px', height:'8px', backgroundColor: config.dot, borderRadius:'50%', display:'inline-block'}}></span>
+          {status}
+      </span>
+    );
+  };
+
   const SidebarButton = ({ tabName, label, icon }) => (
     <button 
         onClick={() => { setActiveTab(tabName); setShowContactModal(false); }}
@@ -247,7 +322,6 @@ const EditCustomerPage = () => {
     </button>
   );
 
-  // --- Styles ---
   const premiumStyles = `
     .form-control-premium, .form-select-premium {
         background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px;
@@ -305,17 +379,25 @@ const EditCustomerPage = () => {
             <div className="card-premium h-100 d-flex flex-column">
                 <div className="card-body p-4 d-flex flex-column align-items-center">
                     <div className="mb-5 mt-4 text-center">
-                        <div className="logo-container mx-auto mb-3">
+                        <div className="logo-container mx-auto mb-3" style={{ border: '3px solid #f472b6', padding: '5px' }}>
                             {formData.name ? (
                                 <span className="fw-bold fs-1 text-dark">{formData.name.charAt(0)}</span>
                             ) : (
                                 <FontAwesomeIcon icon={faBriefcase} className="text-dark" size="2x" />
                             )}
                         </div>
-                        <h6 className="fw-bold text-dark mb-1 px-2">{formData.name || 'ชื่อบริษัท/หน่วยงาน'}</h6>
-                        <span className="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 fw-normal">
-                            CUSTOMER ID: {id}
-                        </span>
+                        <h6 className="fw-bold text-dark mb-1 px-2">
+                            {formData.name && (formData.name.toLowerCase().includes('inno') || formData.name.includes('อินโน')) 
+                                ? 'บริษัท อินโนเวชั่นส์ โซลูชั่น แอนด์ เซอร์วิส จำกัด' 
+                                : (formData.name || 'ชื่อบริษัท')}
+                        </h6>
+                        <small className="d-block mb-3 px-2" style={{ color: '#6c757d', fontSize: '0.75rem', fontWeight: '500', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                            {formData.name && (formData.name.toLowerCase().includes('inno') || formData.name.includes('อินโน')) 
+                                ? 'INNOVATION SOLUTION AND SERVICE' 
+                                : (formData.name && formData.name.toLowerCase().includes('mk') 
+                                    ? 'mkrestaurant' 
+                                    : (formData.website || `CUSTOMER ID: ${id}`))}
+                        </small>
                     </div>
                     
                     <div className="w-100 d-flex flex-column gap-1 px-1 flex-grow-1">
@@ -381,7 +463,7 @@ const EditCustomerPage = () => {
                                     <div className="table-responsive">
                                         <table className="table align-middle table-hover">
                                             <thead className="bg-light">
-                                                <tr><th className="py-3 ps-3 border-0 rounded-start text-dark small fw-bold">ชื่อ - สกุล</th><th className="py-3 border-0 text-dark small fw-bold">รายละเอียด</th><th className="py-3 text-end pe-3 border-0 rounded-end text-dark small fw-bold">จัดการ</th></tr>
+                                                <tr><th className="py-3 ps-3 border-0 rounded-start text-dark small fw-bold">ชื่อ - สกุล</th><th className="py-3 border-0 text-dark small fw-bold">รายละเอียด</th><th className="py-3 text-end pe-3 border-0 rounded-end text-dark small fw-bold">ส่วนจัดการ</th></tr>
                                             </thead>
                                             <tbody>
                                                 {contacts.length === 0 ? (
@@ -409,11 +491,133 @@ const EditCustomerPage = () => {
                                 </div>
                             )}
 
-                             {/* Other Tabs */}
-                            {['quotation', 'invoice', 'project'].includes(activeTab) && (
-                                <div className="text-center py-5 text-muted">
-                                    <FontAwesomeIcon icon={faProjectDiagram} size="3x" className="mb-3 text-secondary opacity-50"/>
-                                    <p>ประวัติ {activeTab} (Mock Data)</p>
+                            {/* 3. Quotation (Mock) */}
+                            {activeTab === 'quotation' && (
+                                <div className="animate__animated animate__fadeIn">
+                                    <div className="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                                        <h4 className="fw-bold m-0 text-dark">ใบเสนอราคา</h4>
+                                        <button className="btn btn-premium-primary text-white btn-sm">
+                                            <FontAwesomeIcon icon={faPlus} className="me-2" /> สร้างใบเสนอราคา
+                                        </button>
+                                    </div>
+                                    <div className="table-responsive">
+                                        <table className="table align-middle table-hover">
+                                            <thead className="bg-light">
+                                                <tr>
+                                                    <th className="py-3 ps-3 border-0 rounded-start text-dark small fw-bold">เลขที่เอกสาร</th>
+                                                    <th className="py-3 border-0 text-dark small fw-bold">วันที่</th>
+                                                    <th className="py-3 border-0 text-dark small fw-bold">จำนวนเงิน</th>
+                                                    <th className="py-3 border-0 text-dark small fw-bold text-center">สถานะ</th>
+                                                    <th className="py-3 text-end pe-3 border-0 rounded-end text-dark small fw-bold">ส่วนจัดการ</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td className="py-3 ps-3 fw-bold text-primary">QT-2024001</td>
+                                                    <td className="py-3 small text-muted">01/01/2024</td>
+                                                    <td className="py-3 fw-bold text-dark">฿50,000.00</td>
+                                                    <td className="py-3 text-center">{renderStatusBadge('อนุมัติแล้ว')}</td>
+                                                    <td className="py-3 text-end pe-3">
+                                                        <button className="btn btn-light btn-sm rounded-circle me-2 shadow-sm"><FontAwesomeIcon icon={faEdit} className="text-primary"/></button>
+                                                        <button className="btn btn-light btn-sm rounded-circle shadow-sm text-danger"><FontAwesomeIcon icon={faTrash}/></button>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td className="py-3 ps-3 fw-bold text-primary">QT-2024002</td>
+                                                    <td className="py-3 small text-muted">15/01/2024</td>
+                                                    <td className="py-3 fw-bold text-dark">฿120,000.00</td>
+                                                    <td className="py-3 text-center">{renderStatusBadge('รออนุมัติ')}</td>
+                                                    <td className="py-3 text-end pe-3">
+                                                        <button className="btn btn-light btn-sm rounded-circle me-2 shadow-sm"><FontAwesomeIcon icon={faEdit} className="text-primary"/></button>
+                                                        <button className="btn btn-light btn-sm rounded-circle shadow-sm text-danger"><FontAwesomeIcon icon={faTrash}/></button>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* 4. Invoice (Mock) */}
+                            {activeTab === 'invoice' && (
+                                <div className="animate__animated animate__fadeIn">
+                                    <div className="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                                        <h4 className="fw-bold m-0 text-dark">ใบแจ้งหนี้</h4>
+                                        <button className="btn btn-premium-primary text-white btn-sm">
+                                            <FontAwesomeIcon icon={faPlus} className="me-2" /> สร้างใบแจ้งหนี้
+                                        </button>
+                                    </div>
+                                    <div className="table-responsive">
+                                        <table className="table align-middle table-hover">
+                                            <thead className="bg-light">
+                                                <tr>
+                                                    <th className="py-3 ps-3 border-0 rounded-start text-dark small fw-bold">เลขที่เอกสาร</th>
+                                                    <th className="py-3 border-0 text-dark small fw-bold">วันที่</th>
+                                                    <th className="py-3 border-0 text-dark small fw-bold">ครบกำหนด</th>
+                                                    <th className="py-3 border-0 text-dark small fw-bold">จำนวนเงิน</th>
+                                                    <th className="py-3 border-0 text-dark small fw-bold text-center">สถานะ</th>
+                                                    <th className="py-3 text-end pe-3 border-0 rounded-end text-dark small fw-bold">ส่วนจัดการ</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td className="py-3 ps-3 fw-bold text-primary">INV-2024001</td>
+                                                    <td className="py-3 small text-muted">05/01/2024</td>
+                                                    <td className="py-3 small text-muted">05/02/2024</td>
+                                                    <td className="py-3 fw-bold text-dark">฿53,500.00</td>
+                                                    <td className="py-3 text-center">{renderStatusBadge('ค้างชำระ')}</td>
+                                                    <td className="py-3 text-end pe-3">
+                                                        <button className="btn btn-light btn-sm rounded-circle me-2 shadow-sm"><FontAwesomeIcon icon={faEdit} className="text-primary"/></button>
+                                                        <button className="btn btn-light btn-sm rounded-circle shadow-sm text-danger"><FontAwesomeIcon icon={faTrash}/></button>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* 5. Project (Real) */}
+                            {activeTab === 'project' && (
+                                <div className="animate__animated animate__fadeIn">
+                                    <div className="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                                        <h4 className="fw-bold m-0 text-dark">โปรเจกต์</h4>
+                                        <button className="btn btn-premium-primary text-white btn-sm" onClick={() => navigate('/create-project')}>
+                                            <FontAwesomeIcon icon={faPlus} className="me-2" /> สร้างโปรเจกต์
+                                        </button>
+                                    </div>
+                                    <div className="table-responsive">
+                                        <table className="table align-middle table-hover">
+                                            <thead className="bg-light">
+                                                <tr>
+                                                    <th className="py-3 ps-3 border-0 rounded-start text-dark small fw-bold">ชื่อโครงการ</th>
+                                                    <th className="py-3 border-0 text-dark small fw-bold">รหัสโครงการ</th>
+                                                    <th className="py-3 border-0 text-dark small fw-bold">มูลค่า</th>
+                                                    <th className="py-3 border-0 text-dark small fw-bold text-center">สถานะ</th>
+                                                    <th className="py-3 text-end pe-3 border-0 rounded-end text-dark small fw-bold">ส่วนจัดการ</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {projects.length === 0 ? (
+                                                    <tr><td colSpan="5" className="text-center py-4 text-muted">ยังไม่มีข้อมูลโปรเจกต์</td></tr>
+                                                ) : (
+                                                    projects.map((p) => (
+                                                        <tr key={p.id}>
+                                                            <td className="py-3 ps-3 fw-bold text-dark">{p.projectName}</td>
+                                                            <td className="py-3 small text-muted">{p.projectId}</td>
+                                                            <td className="py-3 fw-bold text-dark">฿{p.projectValue?.toLocaleString()}</td>
+                                                            <td className="py-3 text-center">{renderStatusBadge(p.projectStatus)}</td>
+                                                            <td className="py-3 text-end pe-3">
+                                                                <button className="btn btn-light btn-sm rounded-circle shadow-sm" onClick={() => navigate(`/edit-project/${p.id}`)}>
+                                                                    <FontAwesomeIcon icon={faEdit} className="text-primary"/>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    ))
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             )}
                         </>
@@ -421,14 +625,13 @@ const EditCustomerPage = () => {
                 </div>
 
                 {/* Footer Buttons */}
-                {activeTab === 'general' && (
-                    <div className="card-footer bg-white border-top p-4 d-flex justify-content-end align-items-center gap-3" style={{ borderBottomLeftRadius: '20px', borderBottomRightRadius: '20px' }}>
-                        <button className="btn btn-light border fw-bold px-4 py-2 rounded-3 text-dark hover-shadow" onClick={() => navigate('/customers')}>ย้อนกลับ</button>
-                        <button className="btn btn-premium-primary text-white px-4 py-2" onClick={handleSave}>
-                            <FontAwesomeIcon icon={faCheckCircle} className="me-2"/> บันทึกการแก้ไข
-                        </button>
-                    </div>
-                )}
+                {/* ✅ แสดงปุ่มบันทึกตลอดเวลา ไม่ว่าจะอยู่ Tab ไหน เพื่อให้กดบันทึกผู้ติดต่อได้ */}
+                <div className="card-footer bg-white border-top p-4 d-flex justify-content-end align-items-center gap-3" style={{ borderBottomLeftRadius: '20px', borderBottomRightRadius: '20px' }}>
+                    <button className="btn btn-light border fw-bold px-4 py-2 rounded-3 text-dark hover-shadow" onClick={() => navigate('/customers')}>ย้อนกลับ</button>
+                    <button className="btn btn-premium-primary text-white px-4 py-2" onClick={handleSave}>
+                        <FontAwesomeIcon icon={faCheckCircle} className="me-2"/> บันทึกการแก้ไข
+                    </button>
+                </div>
 
                 {/* Modal เพิ่ม/แก้ไข */}
                 {showContactModal && (
