@@ -243,6 +243,23 @@ const CustomerPage = () => {
         border-color: #3b82f6;
         box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
+    .btn-clean {
+        background-color: #3b82f6;
+        border: none;
+        color: white;
+        transition: all 0.2s ease-in-out;
+        box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+    }
+    .btn-clean:hover {
+        background-color: #2563eb;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+        color: white !important;
+    }
+    .btn-clean:active {
+        transform: translateY(0);
+        box-shadow: 0 1px 2px rgba(59, 130, 246, 0.2);
+    }
   `;
 
   return (
@@ -259,8 +276,8 @@ const CustomerPage = () => {
         </div>
         
         <button 
-            className="btn btn-primary px-4 py-2 rounded-3 shadow-sm fw-bold d-flex align-items-center" 
-            style={{ backgroundColor: '#3b82f6', borderColor: '#3b82f6', height: '45px' }}
+            className="btn btn-clean px-4 py-2 rounded-3 fw-bold d-flex align-items-center" 
+            style={{ height: '45px' }}
             onClick={() => navigate('/create-customer')} 
         >
             <FontAwesomeIcon icon={faPlus} className="me-2" /> เพิ่มลูกค้าใหม่
@@ -287,9 +304,9 @@ const CustomerPage = () => {
                     />
                 </div>
 
-                <button className="btn btn-primary fw-bold shadow-sm px-4" 
+                <button className="btn btn-clean fw-bold px-4" 
                         onClick={handleSearchClick}
-                        style={{ backgroundColor: '#3b82f6', borderColor: '#3b82f6', borderRadius: '10px', height: '42px' }}>
+                        style={{ borderRadius: '10px', height: '42px' }}>
                     ค้นหา
                 </button>
             </div>
@@ -301,11 +318,11 @@ const CustomerPage = () => {
             <thead className="table-header">
               <tr>
                 <th className="py-3 ps-4 border-0" style={{width: '60px'}}>NO.</th>
-                <th className="py-3 border-0">ชื่อหน่วยงาน/บริษัท</th>
+                <th className="py-3 text-center border-0">ชื่อหน่วยงาน/บริษัท</th>
                 <th className="py-3 border-0">ที่อยู่</th>
                 <th className="py-3 border-0">อีเมล</th>
                 <th className="py-3 border-0">เบอร์โทรศัพท์</th>
-                <th className="py-3 text-center border-0" style={{width: '120px'}}>จัดการ</th>
+                <th className="py-3 text-center border-0" style={{width: '120px'}}>ส่วนจัดการ</th>
               </tr>
             </thead>
             <tbody>
@@ -325,7 +342,7 @@ const CustomerPage = () => {
                 currentItems.map((item, index) => (
                 <tr key={item.id} className="table-row"> {/* ❌ เอา onClick ออกแล้ว */}
                   <td className="py-4 ps-4 fw-bold text-black small">{indexOfFirstItem + index + 1}</td>
-                  <td className="py-4">
+                  <td className="py-4 text-center">
                       <div className="fw-bold text-black">{item.name}</div>
                   </td>
                   <td className="py-4 text-black small text-truncate" style={{maxWidth: '250px'}}>

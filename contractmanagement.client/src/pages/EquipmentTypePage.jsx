@@ -329,6 +329,23 @@ const EquipmentTypePage = () => {
         background-color: white;
         color: #334155;
     }
+    .btn-clean {
+        background-color: #3b82f6;
+        border: none;
+        color: white;
+        transition: all 0.2s ease-in-out;
+        box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+    }
+    .btn-clean:hover {
+        background-color: #2563eb;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+        color: white !important;
+    }
+    .btn-clean:active {
+        transform: translateY(0);
+        box-shadow: 0 1px 2px rgba(59, 130, 246, 0.2);
+    }
   `;
 
   return (
@@ -344,8 +361,8 @@ const EquipmentTypePage = () => {
             <span className="text-black small ps-1 fw-bold">จัดการข้อมูลประเภทอุปกรณ์ทั้งหมดในระบบ</span>
         </div>
         <button 
-          className="btn btn-primary px-4 py-2 rounded-3 shadow-sm fw-bold d-flex align-items-center"
-          style={{ backgroundColor: '#3b82f6', borderColor: '#3b82f6', height: '45px' }}
+          className="btn btn-clean px-4 py-2 rounded-3 fw-bold d-flex align-items-center"
+          style={{ height: '45px' }}
           onClick={handleOpenModal}
         >
           <FontAwesomeIcon icon={faPlus} className="me-2" /> 
@@ -417,7 +434,7 @@ const EquipmentTypePage = () => {
                 {/* กำหนดความกว้างคอลัมน์ให้สมดุล (20% x 4) + (10% x 2) */}
                 <th className="py-3 ps-4 text-start border-0" style={{ width: '20%' }}>ชื่ออุปกรณ์</th>
                 <th className="py-3 text-start border-0" style={{ width: '20%' }}>รายละเอียด</th>
-                <th className="py-3 text-start border-0" style={{ width: '20%' }}>บันทึกโดย</th>
+                <th className="py-3 text-center border-0" style={{ width: '20%' }}>บันทึกโดย</th>
                 <th className="py-3 text-start border-0" style={{ width: '20%' }}>วันที่บันทึก</th>
                 <th className="py-3 text-center border-0" style={{ width: '10%' }}>สถานะ</th>
                 <th className="py-3 text-center border-0" style={{ width: '10%' }}>จัดการ</th>
@@ -450,7 +467,7 @@ const EquipmentTypePage = () => {
                     </td>
 
                     {/* ผู้บันทึก */}
-                    <td className="py-3 text-dark small">
+                    <td className="py-3 text-center text-dark small">
                         {item.createdBy}
                     </td>
 

@@ -19,14 +19,17 @@ const ProjectPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [submittedSearch, setSubmittedSearch] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
-  const [selectedYear, setSelectedYear] = useState('2568'); 
+  // ✅ ปรับให้เป็นปีปัจจุบันแบบ Dynamic (พ.ศ.)
+  const currentThaiYear = (new Date().getFullYear() + 543).toString();
+  const [selectedYear, setSelectedYear] = useState("ทั้งหมด"); 
   const [showYearDropdown, setShowYearDropdown] = useState(false); 
 
   // --- Pagination State ---
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6; 
 
-  const yearOptions = ["2567", "2568", "2569"];
+  // ✅ เพิ่มปีให้ครอบคลุม
+  const yearOptions = ["ทั้งหมด", "2567", "2568", "2569", "2570"];
 
   // --- Functions ---
   const fetchProjects = async () => {
@@ -39,7 +42,8 @@ const ProjectPage = () => {
             id: item.id,
             code: item.projectId,   
             name: item.projectName,            
-            unit: item.customerName || 'กทม.', 
+            // ✅ แก้ไขให้ดึงชื่อบริษัท (companyName) ก่อน ถ้าไม่มีค่อยไปดู Customer หรือ customerName
+            unit: item.companyName || (item.customer && item.customer.name) || item.customerName || 'กทม.', 
             createdBy: item.createdBy || 'Admin', 
             date: item.createdDate ? new Date(item.createdDate).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }) : '-',
             status: item.projectStatus || 'จัดทำโครงการ',
@@ -75,7 +79,7 @@ const ProjectPage = () => {
   // --- Filter Logic ---
   const filteredData = useMemo(() => {
     return data.filter(item => {
-      const matchesYear = item.date.includes(selectedYear);
+      const matchesYear = selectedYear === "ทั้งหมด" || item.date.includes(selectedYear);
       const matchesStatus = selectedStatus === '' || 
           item.status.replace(/\s/g, '') === selectedStatus.replace(/\s/g, '');
       const matchesSearch = String(item.name).toLowerCase().includes(submittedSearch.toLowerCase()) || 
@@ -212,6 +216,23 @@ const ProjectPage = () => {
     }
     .pagination-btn.active { background-color: #3b82f6; color: white; }
     .custom-input { border-radius: 10px; border: 1px solid #e2e8f0; height: 42px; background-color: #f8fafc; color: #000; }
+    .btn-clean {
+        background-color: #3b82f6;
+        border: none;
+        color: white;
+        transition: all 0.2s ease-in-out;
+        box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+    }
+    .btn-clean:hover {
+        background-color: #2563eb;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+        color: white !important;
+    }
+    .btn-clean:active {
+        transform: translateY(0);
+        box-shadow: 0 1px 2px rgba(59, 130, 246, 0.2);
+    }
   `;
 
   return (
@@ -224,8 +245,8 @@ const ProjectPage = () => {
           <span className="text-black small ps-1 fw-bold">ระบบจัดการข้อมูลโครงการ</span>
       </div>
       <button 
-        className="btn btn-primary px-4 py-2 rounded-3 shadow-sm fw-bold d-flex align-items-center" 
-        style={{ backgroundColor: '#3b82f6', borderColor: '#3b82f6', height: '45px' }}
+        className="btn btn-clean px-4 py-2 rounded-3 fw-bold d-flex align-items-center" 
+        style={{ height: '45px' }}
         onClick={() => navigate('/create-project')} 
       >
           <FontAwesomeIcon icon={faPlus} className="me-2" /> เพิ่มโครงการ
@@ -274,11 +295,9 @@ const ProjectPage = () => {
           
           {/* ✅ แก้ไขตรงนี้: เพิ่ม borderColor ให้เป็นสีเดียวกับ background */}
           <button 
-              className="btn btn-primary fw-bold shadow-sm px-4" 
+              className="btn btn-clean fw-bold px-4" 
               onClick={handleSearchClick} 
               style={{ 
-                  backgroundColor: '#3b82f6', 
-                  borderColor: '#3b82f6', // <-- เพิ่มบรรทัดนี้
                   height: '42px', 
                   borderRadius: '10px' 
               }}
@@ -293,11 +312,11 @@ const ProjectPage = () => {
             <thead className="table-header">
               <tr>
                 <th className="py-3 ps-4 text-start border-0" style={{ width: '30%' }}>ชื่อโครงการ</th>
-                <th className="py-3 text-start border-0" style={{ width: '15%' }}>หน่วยงาน</th>
+                <th className="py-3 text-center border-0" style={{ width: '15%' }}>หน่วยงาน</th>
                 <th className="py-3 text-start border-0" style={{ width: '15%' }}>วันที่สร้าง</th>
-                <th className="py-3 text-start border-0" style={{ width: '15%' }}>สร้างโดย</th>
+                <th className="py-3 text-center border-0" style={{ width: '15%' }}>สร้างโดย</th>
                 <th className="py-3 text-center border-0" style={{ width: '15%' }}>สถานะ</th>
-                <th className="py-3 text-center border-0" style={{ width: '10%' }}>จัดการ</th>
+                <th className="py-3 text-center border-0" style={{ width: '10%' }}>ส่วนจัดการ</th>
               </tr>
             </thead>
             <tbody>
@@ -316,9 +335,9 @@ const ProjectPage = () => {
                           <span className="fw-bold text-dark">{item.name}</span>
                       </div>
                   </td>
-                  <td className="py-3 text-start text-black small">{item.unit}</td>
+                  <td className="py-3 text-center text-black small">{item.unit}</td>
                   <td className="py-3 text-start text-black small">{item.date}</td>
-                  <td className="py-3 text-start text-black small">{item.createdBy}</td>
+                  <td className="py-3 text-center text-black small">{item.createdBy}</td>
                   <td className="py-3 text-center">{renderStatusBadge(item.status)}</td>
                   <td className="py-3 text-center">
                       <div className="d-flex justify-content-center gap-2">

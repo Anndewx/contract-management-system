@@ -19,7 +19,10 @@ namespace Contractmanagement.API.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            var data = _context.Tbl_Projects.OrderByDescending(x => x.Id).ToList();
+            var data = _context.Tbl_Projects
+                .Include(x => x.Customer) // ✅ Include Customer data
+                .OrderByDescending(x => x.Id)
+                .ToList();
             return Ok(data);
         }
 

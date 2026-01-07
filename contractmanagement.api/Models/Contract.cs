@@ -54,6 +54,10 @@ namespace Contractmanagement.API.Models
         [StringLength(20)]
         public string? WarrantyUnit { get; set; } = "วัน"; // หน่วยนับ (วัน/ปี)
 
+        // 🆕 สถานะสัญญา: รอดำเนินการ, ดำเนินโครงการ, ปิดโครงการ, ยกเลิก
+        [StringLength(50)]
+        public string? ContractStatus { get; set; } = "รอดำเนินการ";
+
         // --- ส่วนเชื่อมโยง (Foreign Keys) ---
         public int ProjectTypeId { get; set; }
         

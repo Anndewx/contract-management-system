@@ -4,7 +4,7 @@
 .gradient-custom {
   background-image: 
       url('/logo-innovation.png'), 
-      linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); 
+      linear-gradient(135deg, #334155 0%, #60a5fa 100%);
 
   /* ตำแหน่งโลโก้บนซ้าย */
   background-position: top 30px left 30px, center center;
